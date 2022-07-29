@@ -1,0 +1,13 @@
+{
+  "name": "Savings and Deals",
+  "description": "Save big and get good deals!",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": ["activeTab", "scripting"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "128": "icon128.png"
+  }
+}
