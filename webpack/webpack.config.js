@@ -2,8 +2,10 @@ const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
 module.exports = {
   mode: "production",
+  watch: true,
   entry: {
     background: path.resolve(__dirname, "..", "src", "background.ts"),
+    "shopee-content": path.resolve(__dirname, "..", "src", "shopee-content.ts"),
   },
   output: {
     path: path.join(__dirname, "../dist"),
