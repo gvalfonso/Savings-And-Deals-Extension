@@ -1,18 +1,17 @@
 {
   "name": "Savings and Deals",
-  "description": "Save big and get good deals!",
+  "description": "An online shopping helper that finds you the best deals with the best savings when you shop online.",
   "version": "1.0",
   "manifest_version": 3,
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab", "scripting", "webRequest"],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["https://shopee.ph/*"],
-      "css": [],
-      "js": ["shopee-content.js"],
-      "run_at": "document_end"
+      "css": ["savings-and-deals-css.css"],
+      "js": ["shopee-content.js"]
     }
   ],
   "host_permissions": ["https://shopee.ph/"],
@@ -24,5 +23,11 @@
       "128": "icon128.png"
     },
     "default_title": "Savings and Deals"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["helper-display.html", "icon128.png", "icon128letters.png"],
+      "matches": ["https://shopee.ph/*"]
+    }
+  ]
 }

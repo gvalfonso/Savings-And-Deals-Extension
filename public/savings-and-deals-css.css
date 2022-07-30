@@ -1,0 +1,74 @@
+#savings-and-deals-icon {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    /* background: #79dcf1; */
+    width: 80px;
+    height: 80px;
+    position: fixed;
+    top: 20%;
+    right: 0px;
+    z-index: 9000000000000000000;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.5);
+    background-image: linear-gradient(#79dcf1, #6abfd3);
+    -webkit-animation: animation 1s ease-in-out;
+}
+
+#savings-and-deals-icon-hidden {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    /* background: #79dcf1; */
+    width: 80px;
+    height: 80px;
+    position: fixed;
+    top: 20%;
+    right: 0px;
+    z-index: 9000000000000000000;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.5);
+    background-image: linear-gradient(#79dcf1, #6abfd3);
+    -webkit-animation: animationLeave 1s ease-in-out;
+}
+
+@-webkit-keyframes animationLeave {
+    from {right: 0px;}
+    to {right: -100px;}
+}
+
+@-webkit-keyframes animation {
+    from {right: -80px;}
+    to {right: 0px;}
+}
+
+#savings-and-deals-logo-container {
+    transform: translate(13%, 13%);
+}
+
+#savings-and-deals-image-logo {
+    width: 65px;
+    height: 65px;
+}
+
+#savings-and-deals-modal-opaque {
+    display: block;
+    width: 200px;
+    height: 300px;
+    position: fixed;
+    top: calc(20% + 80px);
+    right: 80px;
+    border-radius: 4px;
+    opacity: 1;
+    transition: opacity 0.3s; 
+    background-image: linear-gradient(#ffffff, #f9f9f9);
+}
+
+#savings-and-deals-modal-clear {
+    display: block;
+    width: 200px;
+    height: 300px;
+    position: fixed;
+    top: calc(20% + 80px);
+    right: 80px;
+    background: white;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.3s; 
+}
