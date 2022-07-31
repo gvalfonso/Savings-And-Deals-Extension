@@ -105,7 +105,7 @@ function createHelper(config: typeof settings) {
 
 function createItem(item: ItemsEntity): HTMLDivElement {
   const itemWrapper = document.createElement("div");
-  itemWrapper.style.padding = "5px 0";
+  itemWrapper.style.padding = "2px 0";
   const itemDiv = document.createElement("a");
   itemDiv.className = "savings-and-deals-item-box";
   itemDiv.href = `https://shopee.ph/product/${item.item_basic.shopid}/${item.item_basic.itemid}`;
@@ -115,12 +115,11 @@ function createItem(item: ItemsEntity): HTMLDivElement {
   productImage.id = "savings-and-deals-rating-image";
   itemDiv.appendChild(productImage);
 
-  const itemTitle = document.createElement("a");
-  itemTitle.ariaSetSize = "8";
-  itemTitle.innerText = item.item_basic.name.substring(0, 50);
-  if (item.item_basic.name.length > 50)
+  const itemTitle = document.createElement("p");
+  itemTitle.className = "savings-and-deals-item-title";
+  itemTitle.innerText = item.item_basic.name.substring(0, 40);
+  if (item.item_basic.name.length > 40)
     itemTitle.innerText = itemTitle.innerText + "...";
-  itemTitle.style.color = "black";
   itemDiv.appendChild(itemTitle);
 
   const price = document.createElement("p");
