@@ -1,19 +1,29 @@
 import { ShopeeProductData, ShopVouchersEntity } from "./product.type";
+import { RecommendedSearchType } from "./recommended.type";
 import { ItemsEntity, ShopeeSearchResult } from "./search.type";
 import { sleep } from "./utils";
 
-var ready = false;
+export const settings = {
+  iconHidden: false,
+};
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  switch (request.type) {
+    case "GET_CONFIG":
+      sendResponse(settings);
+      break;
+    default:
+      break;
+  }
+});
 
 chrome.action.onClicked.addListener((tab) => {
   // Send a message to the active tab
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     var activeTab = tabs[0];
+    settings.iconHidden = !settings.iconHidden;
     chrome.tabs.sendMessage(activeTab.id || -1, { type: "TOGGLE" });
   });
-});
-
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.ready) ready = true;
 });
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
@@ -21,6 +31,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     if (tab.url) {
       const { shopid, itemid } = getIds(tab.url);
       if (itemid && shopid) {
+        chrome.tabs.sendMessage(tabId || -1, { type: "LOADING" });
         const productData = await getProductData(itemid, shopid);
         const bestVoucher = getBestDiscount(
           productData.data.price_min,
@@ -34,6 +45,14 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         const otherProducts = await searchForOtherProducts(
           productData.data.name
         );
+        // const otherRecommendedProducts = await searchForRecommendedProducts(
+        //   productData.data.name,
+        //   productData.data.shopid,
+        //   productData.data.itemid,
+        //   productData.data.categories?.[0].catid || 0
+        // );
+        // otherProducts.items = [...otherProducts.items || [], otherRecommendedProducts.data.]
+        otherProducts.items = otherProducts.items?.filter((i) => i.item_basic);
         otherProducts.items = otherProducts.items?.filter(
           (i) =>
             (i.item_basic.voucher_info
@@ -44,6 +63,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                 )
               : i.item_basic.price_min) < productData.data.price_min &&
             i.item_basic.sold > 0 &&
+            i.item_basic.item_rating.rating_star > 4 &&
             i.itemid.toString() != itemid
         );
         otherProducts.items?.forEach(
@@ -61,7 +81,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
           )
           ?.slice(0, 10)
           .sort((a, b) => a.item_basic.price_min - b.item_basic.price_min);
+        console.log(rankedItems?.length);
         sendMessageToContent(tab, rankedItems || []);
+      } else {
+        chrome.tabs.sendMessage(tabId || -1, { type: "LOADING" });
       }
     }
   }
@@ -71,7 +94,6 @@ async function sendMessageToContent(
   tab: chrome.tabs.Tab,
   rankedItems: ItemsEntity[]
 ) {
-  while (!ready) await sleep(1000);
   chrome.tabs.sendMessage(tab.id || -1, {
     type: "SUGGESTIONS",
     items: rankedItems,
@@ -146,6 +168,25 @@ async function searchForOtherProducts(
       `https://shopee.ph/api/v4/search/search_items?by=relevancy&keyword=${encodeURIComponent(
         searchKeyword
       )}&limit=60&newest=0&order=desc&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2`,
+      {
+        method: "GET",
+        mode: "cors",
+      }
+    )
+  ).json();
+}
+
+async function searchForRecommendedProducts(
+  searchKeyword: string,
+  shopid: number,
+  itemid: number,
+  categoryid: number
+): Promise<RecommendedSearchType> {
+  return (
+    await fetch(
+      `https://shopee.ph/api/v4/recommend/recommend?bundle=product_detail_page&catid=${categoryid}&item_card=3&itemid=${itemid}&keyword=${encodeURIComponent(
+        searchKeyword
+      )}&limit=48&section=you_may_also_like&shopid=${shopid}`,
       {
         method: "GET",
         mode: "cors",

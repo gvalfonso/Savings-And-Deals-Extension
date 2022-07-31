@@ -11,7 +11,8 @@
     {
       "matches": ["https://shopee.ph/*"],
       "css": ["savings-and-deals-css.css"],
-      "js": ["shopee-content.js"]
+      "js": ["shopee-content.js"],
+      "all_frames": false
     }
   ],
   "host_permissions": ["https://shopee.ph/"],
@@ -26,7 +27,13 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["helper-display.html", "icon128.png", "icon128letters.png"],
+      "resources": [
+        "helper-display.html",
+        "icon128.png",
+        "icon128letters.png",
+        "best-deal-sticker.png",
+        "loading.gif"
+      ],
       "matches": ["https://shopee.ph/*"]
     }
   ]

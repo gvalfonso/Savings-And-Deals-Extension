@@ -10,8 +10,9 @@
     z-index: 9000000000000000000;
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.5);
     background-image: linear-gradient(#79dcf1, #6abfd3);
-    -webkit-animation: animation 1s ease-in-out;
+    -webkit-animation: animation 0.3s ease-in-out;
 }
+
 
 #savings-and-deals-icon-hidden {
     border-top-left-radius: 10px;
@@ -21,11 +22,11 @@
     height: 80px;
     position: fixed;
     top: 20%;
-    right: 0px;
+    right: -100px;
     z-index: 9000000000000000000;
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.5);
     background-image: linear-gradient(#79dcf1, #6abfd3);
-    -webkit-animation: animationLeave 1s ease-in-out;
+    -webkit-animation: animationLeave 0.3s ease-in-out;
 }
 
 @-webkit-keyframes animationLeave {
@@ -49,26 +50,57 @@
 
 #savings-and-deals-modal-opaque {
     display: block;
-    width: 200px;
-    height: 300px;
+    justify-content: center;
+    width: 290px;
+    height: 360px;
     position: fixed;
-    top: calc(20% + 80px);
+    top: 20%;
     right: 80px;
     border-radius: 4px;
     opacity: 1;
     transition: opacity 0.3s; 
     background-image: linear-gradient(#ffffff, #f9f9f9);
+    z-index: 9000000000000000000;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.2);
+    padding: 5px;
+    margin: 5px;
+    overflow-y: auto;
+    margin-inline: auto;
 }
 
 #savings-and-deals-modal-clear {
     display: block;
-    width: 200px;
-    height: 300px;
+    width: 290px;
+    height: 360px;
     position: fixed;
-    top: calc(20% + 80px);
+    top: 20%;
     right: 80px;
     background: white;
     border-radius: 4px;
     opacity: 0;
     transition: opacity 0.3s; 
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.2);
+    z-index: 9000000000000000000;
+    padding: 2px;
+    margin: 5px;
+    overflow-y: auto;
+    margin-inline: auto;
 }
+
+.savings-and-deals-item-box {
+    width: 97%;
+    height: 100px;
+    display: flex;
+    background-image: linear-gradient(#ffffff, #f7f7f7);
+    border-radius: 4px;
+    box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.2);
+    padding: 3px;
+    transition: 0.3s;
+    position: relative
+}
+
+.savings-and-deals-item-box:hover {
+    box-shadow: 0px 5px 5px 0px rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+}
+

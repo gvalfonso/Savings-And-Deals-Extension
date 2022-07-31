@@ -1,46 +1,77 @@
+import { settings } from "./background";
 import { ItemsEntity } from "./search.type";
 
-var iconButton = document.createElement("a");
-iconButton.id = "savings-and-deals-icon";
-iconButton.onclick = toggleModal;
+var helperModal: HTMLDivElement;
+var iconButton: HTMLAnchorElement;
+var logoContainer: HTMLDivElement;
+var itemList: HTMLDivElement;
+var logoImg: HTMLImageElement;
 
-var logoContainer = document.createElement("div");
-logoContainer.id = "savings-and-deals-logo-container";
-iconButton.appendChild(logoContainer);
+interface MessageBaseType {
+  type: string;
+}
+interface SuggestionsMessage extends MessageBaseType {
+  items: ItemsEntity[];
+}
 
-var logoImg = document.createElement("img");
-logoImg.id = "savings-and-deals-image-logo";
-logoImg.src = chrome.runtime.getURL("icon128letters.png");
-logoContainer.appendChild(logoImg);
-
-document.getElementsByTagName("body")[0].appendChild(iconButton);
-
-var helperModal = document.createElement("iframe");
-helperModal.id = "savings-and-deals-modal-clear";
-helperModal.innerText = "HELLO WORLD";
-document.getElementsByTagName("body")[0].appendChild(helperModal);
-
-chrome.runtime.sendMessage({ ready: true });
+chrome.runtime.sendMessage(
+  { type: "GET_CONFIG" },
+  (response: typeof settings) => {
+    createHelper(response);
+  }
+);
 
 chrome.runtime.onMessage.addListener(function (
-  msg:
-    | {
-        type: string;
-        items: ItemsEntity[];
-      }
-    | { type: string }
+  msg: SuggestionsMessage | MessageBaseType
 ) {
   switch (msg.type) {
     case "SUGGESTIONS":
+      clearHelperModal();
+      if ((msg as SuggestionsMessage).items.length !== 0) {
+        (msg as SuggestionsMessage).items.forEach((item) => {
+          const itemDiv = createItem(item);
+          helperModal.appendChild(itemDiv);
+        });
+      } else if ((msg as SuggestionsMessage).items.length === 0) {
+        const imgDiv = document.createElement("img");
+        imgDiv.src = chrome.runtime.getURL("best-deal-sticker.png");
+        imgDiv.height = 200;
+        imgDiv.width = 200;
+        imgDiv.style.padding = "12%";
+        helperModal.appendChild(imgDiv);
+        const titleDiv = document.createElement("div");
+        titleDiv.style.padding = "10%";
+        titleDiv.style.top = "80px";
+        titleDiv.style.fontSize = "20px";
+        titleDiv.style.textAlign = "center";
+        titleDiv.innerText = "You have the best deal!";
+        helperModal.appendChild(titleDiv);
+      }
       break;
     case "TOGGLE":
-      console.log("TOOGLLGEEE");
       toggleIcon();
+      break;
+    case "LOADING":
+      clearHelperModal();
+      const imgDiv = document.createElement("img");
+      imgDiv.src = chrome.runtime.getURL("loading.gif");
+      imgDiv.height = 200;
+      imgDiv.width = 200;
+      imgDiv.style.position = "absolute";
+      imgDiv.style.left = "50px";
+      imgDiv.style.top = "70px";
+      helperModal.appendChild(imgDiv);
       break;
     default:
       break;
   }
 });
+
+function clearHelperModal() {
+  helperModal.querySelectorAll("*").forEach((ele) => {
+    ele.remove();
+  });
+}
 
 function toggleModal() {
   helperModal.id =
@@ -50,6 +81,69 @@ function toggleModal() {
 }
 
 function toggleIcon() {
-  iconButton.id = "savings-and-deals-icon-hidden";
+  iconButton.id =
+    iconButton.id === "savings-and-deals-icon-hidden"
+      ? "savings-and-deals-icon"
+      : "savings-and-deals-icon-hidden";
   helperModal.id = "savings-and-deals-modal-clear";
+}
+
+function createHelper(config: typeof settings) {
+  iconButton = document.createElement("a");
+  if (config.iconHidden) iconButton.id = "savings-and-deals-icon-hidden";
+  else iconButton.id = "savings-and-deals-icon";
+  iconButton.onclick = toggleModal;
+
+  logoContainer = document.createElement("div");
+  logoContainer.id = "savings-and-deals-logo-container";
+  iconButton.appendChild(logoContainer);
+
+  logoImg = document.createElement("img");
+  logoImg.id = "savings-and-deals-image-logo";
+  logoImg.src = chrome.runtime.getURL("icon128letters.png");
+  logoContainer.appendChild(logoImg);
+
+  document.getElementsByTagName("body")[0].appendChild(iconButton);
+
+  helperModal = document.createElement("div");
+  helperModal.id = "savings-and-deals-modal-clear";
+  document.getElementsByTagName("body")[0].appendChild(helperModal);
+
+  const imgDiv = document.createElement("img");
+  imgDiv.src = chrome.runtime.getURL("loading.gif");
+  imgDiv.height = 200;
+  imgDiv.width = 200;
+  imgDiv.style.position = "absolute";
+  imgDiv.style.left = "50px";
+  imgDiv.style.top = "70px";
+  helperModal.appendChild(imgDiv);
+}
+
+function createItem(item: ItemsEntity): HTMLDivElement {
+  const itemWrapper = document.createElement("div");
+  itemWrapper.style.padding = "5px 0";
+  const itemDiv = document.createElement("a");
+  itemDiv.className = "savings-and-deals-item-box";
+  itemDiv.style.color = "black";
+  const productImage = document.createElement("img");
+  productImage.src = "https://cf.shopee.ph/file/" + item.item_basic.image;
+  productImage.width = 100;
+  productImage.height = 100;
+  productImage.style.marginRight = "8px";
+  productImage.style.float = "left";
+  itemDiv.appendChild(productImage);
+  const itemTitle = document.createElement("a");
+  itemTitle.ariaSetSize = "8";
+  itemTitle.innerText = item.item_basic.name.substring(0, 50);
+  if (item.item_basic.name.length > 50)
+    itemTitle.innerText = itemTitle.innerText + "...";
+  itemDiv.href = `https://shopee.ph/product/${item.shopid}/${item.itemid}`;
+  itemTitle.style.color = "black";
+  itemDiv.appendChild(itemTitle);
+
+  const price = document.createElement("p");
+  price.innerText = "₱" + (item.item_basic.price_min / 100000).toString();
+  itemDiv.appendChild(price);
+  itemWrapper.appendChild(itemDiv);
+  return itemWrapper;
 }
