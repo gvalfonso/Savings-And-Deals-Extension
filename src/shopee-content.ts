@@ -4,7 +4,6 @@ import { ItemsEntity } from "./search.type";
 var helperModal: HTMLDivElement;
 var iconButton: HTMLAnchorElement;
 var logoContainer: HTMLDivElement;
-var itemList: HTMLDivElement;
 var logoImg: HTMLImageElement;
 
 interface MessageBaseType {
@@ -38,6 +37,7 @@ chrome.runtime.onMessage.addListener(function (
         imgDiv.height = 200;
         imgDiv.width = 200;
         imgDiv.style.padding = "12%";
+        imgDiv.style.left = "12%";
         helperModal.appendChild(imgDiv);
         const titleDiv = document.createElement("div");
         titleDiv.style.padding = "10%";
@@ -137,7 +137,7 @@ function createItem(item: ItemsEntity): HTMLDivElement {
   itemTitle.innerText = item.item_basic.name.substring(0, 50);
   if (item.item_basic.name.length > 50)
     itemTitle.innerText = itemTitle.innerText + "...";
-  itemDiv.href = `https://shopee.ph/product/${item.shopid}/${item.itemid}`;
+  itemDiv.href = `https://shopee.ph/product/${item.item_basic.shopid}/${item.item_basic.itemid}`;
   itemTitle.style.color = "black";
   itemDiv.appendChild(itemTitle);
 

@@ -31,7 +31,11 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       const { shopid, itemid } = getIds(tab.url);
       if (itemid && shopid) {
         sendMessageToContent(tab.id || -1, { type: "LOADING" });
-        const productData = await getProductData(itemid, shopid);
+        var productData = await getProductData(itemid, shopid);
+        while (!productData.data) {
+          productData = await getProductData(itemid, shopid);
+          await sleep(5000);
+        }
         const bestVoucher = getBestDiscount(
           productData.data.price_min,
           productData.data.shop_vouchers || []
@@ -44,13 +48,18 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         const otherProducts = await searchForOtherProducts(
           productData.data.name
         );
-        // const otherRecommendedProducts = await searchForRecommendedProducts(
-        //   productData.data.name,
-        //   productData.data.shopid,
-        //   productData.data.itemid,
-        //   productData.data.categories?.[0].catid || 0
-        // );
-        // otherProducts.items = [...otherProducts.items || [], otherRecommendedProducts.data.]
+        const otherRecommendedProducts = await searchForRecommendedProducts(
+          productData.data.name,
+          productData.data.shopid,
+          productData.data.itemid,
+          productData.data.categories?.[0].catid || 0
+        );
+        otherProducts.items = [
+          ...(otherProducts.items || []),
+          ...((
+            otherRecommendedProducts.data.sections?.[0]?.data?.item as any
+          ).map((i: any) => ({ item_basic: i })) || []),
+        ];
         otherProducts.items = otherProducts.items?.filter((i) => i.item_basic);
         otherProducts.items = otherProducts.items?.filter(
           (i) =>
@@ -63,7 +72,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
               : i.item_basic.price_min) < productData.data.price_min &&
             i.item_basic.sold > 0 &&
             i.item_basic.item_rating.rating_star > 4 &&
-            i.itemid.toString() != itemid
+            i.item_basic.itemid.toString() != itemid
         );
         otherProducts.items?.forEach(
           (i) =>
@@ -80,7 +89,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
           )
           ?.slice(0, 10)
           .sort((a, b) => a.item_basic.price_min - b.item_basic.price_min);
-        sendMessageToContent(tab.id || -1, rankedItems || []);
+        sendMessageToContent(tab.id || -1, {
+          type: "SUGGESTIONS",
+          items: rankedItems || [],
+        });
       } else {
         sendMessageToContent(tab.id || -1, { type: "LOADING" });
       }
