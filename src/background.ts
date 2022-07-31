@@ -20,8 +20,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 chrome.action.onClicked.addListener((tab) => {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     var activeTab = tabs[0];
-    settings.iconHidden = !settings.iconHidden;
-    sendMessageToContent(activeTab.id || -1, { type: "TOGGLE" });
+    if (activeTab.url?.includes("shopee.ph")) {
+      settings.iconHidden = !settings.iconHidden;
+      sendMessageToContent(activeTab.id || -1, {
+        type: "TOGGLE",
+        iconHidden: settings.iconHidden,
+      });
+    }
   });
 });
 
@@ -85,10 +90,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         );
         const rankedItems = otherProducts.items
           ?.filter(
-            (i) => i.item_basic.price_min / productData.data.price_min > 0.1
+            (i) => i.item_basic.price_min / productData.data.price_min > 0.3
           )
           ?.slice(0, 10)
-          .sort((a, b) => a.item_basic.price_min - b.item_basic.price_min);
+          .sort((a, b) => b.item_basic.price_min - a.item_basic.price_min);
         sendMessageToContent(tab.id || -1, {
           type: "SUGGESTIONS",
           items: rankedItems || [],
@@ -101,11 +106,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 });
 
 async function sendMessageToContent(tabId: number, data: Record<string, any>) {
-  try {
-    chrome.tabs.sendMessage(tabId, data);
-  } catch {
-    console.log("Message was sent too early.");
-  }
+  chrome.tabs.sendMessage(tabId, data);
 }
 
 function getBestDiscount(currentPrice: number, vouchers: ShopVouchersEntity[]) {

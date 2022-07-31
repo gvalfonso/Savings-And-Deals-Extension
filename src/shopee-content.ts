@@ -9,6 +9,9 @@ var logoImg: HTMLImageElement;
 interface MessageBaseType {
   type: string;
 }
+interface ToggleMessage extends MessageBaseType {
+  iconHidden: boolean;
+}
 interface SuggestionsMessage extends MessageBaseType {
   items: ItemsEntity[];
 }
@@ -43,7 +46,7 @@ chrome.runtime.onMessage.addListener(function (
       }
       break;
     case "TOGGLE":
-      toggleIcon();
+      toggleIcon((msg as ToggleMessage).iconHidden);
       break;
     case "LOADING":
       clearHelperModal();
@@ -70,11 +73,10 @@ function toggleModal() {
       : "savings-and-deals-modal-opaque";
 }
 
-function toggleIcon() {
-  iconButton.className =
-    iconButton.className === "savings-and-deals-icon-hidden"
-      ? "savings-and-deals-icon"
-      : "savings-and-deals-icon-hidden";
+function toggleIcon(hidden: boolean) {
+  iconButton.className = hidden
+    ? "savings-and-deals-icon-hidden"
+    : "savings-and-deals-icon";
   helperModal.id = "savings-and-deals-modal-clear";
 }
 
@@ -129,7 +131,21 @@ function createItem(item: ItemsEntity): HTMLDivElement {
 
   const price = document.createElement("p");
   price.innerText = "₱" + (item.item_basic.price_min / 100000).toString();
+  price.style.fontSize = "10";
+  price.style.position = "absolute";
+  price.style.left = "110px";
+  price.style.bottom = "0px";
   itemDiv.appendChild(price);
+
+  const rating = document.createElement("p");
+  rating.innerText =
+    "★ " + item.item_basic.item_rating.rating_star.toFixed(2).toString();
+  rating.style.fontSize = "10";
+  rating.style.color = "Red";
+  rating.style.position = "absolute";
+  rating.style.right = "10px";
+  rating.style.bottom = "0px";
+  itemDiv.appendChild(rating);
   itemWrapper.appendChild(itemDiv);
   return itemWrapper;
 }
