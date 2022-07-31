@@ -98,9 +98,10 @@
 
 .savings-and-deals-item-title {
     padding: 10%;
-    top: 80px;
+    top: 250px;
     font-size: 20px;
     text-align: center;
+    position: absolute;
 }
 
 .savings-and-deals-item-box {
@@ -125,13 +126,13 @@
     width: 200px;
     position: absolute;
     left: 50px;
-    top: 70px
+    top: 82px
 }
 
 #savings-and-deals-best-deal {
     height: 200px;
     width: 200px;
     position: absolute;
-    left: 50px;
+    left: 55px;
     top: 70px
 }

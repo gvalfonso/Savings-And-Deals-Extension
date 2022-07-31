@@ -36,13 +36,9 @@ chrome.runtime.onMessage.addListener(function (
         });
       } else if ((msg as SuggestionsMessage).items.length === 0) {
         const imgDiv = document.createElement("img");
-        imgDiv.src = chrome.runtime.getURL("images/loading.gif");
-        imgDiv.id = "savings-and-deals-loading";
+        imgDiv.src = chrome.runtime.getURL("images/best-deal-sticker.png");
+        imgDiv.id = "savings-and-deals-best-deal";
         helperModal.appendChild(imgDiv);
-        const titleDiv = document.createElement("div");
-        titleDiv.className = "savings-and-deals-item-title";
-        titleDiv.innerText = "You have the best deal!";
-        helperModal.appendChild(titleDiv);
       }
       break;
     case "TOGGLE":
