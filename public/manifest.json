@@ -31,7 +31,8 @@
         "images/icon128.png",
         "images/icon128letters.png",
         "images/best-deal-sticker.png",
-        "images/loading.gif"
+        "images/loading.gif",
+        "images/coupon-icon.png"
       ],
       "matches": ["https://shopee.ph/*"]
     }
