@@ -67,6 +67,11 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         ];
         otherProducts.items = otherProducts.items?.filter((i) => i.item_basic);
         otherProducts.items = otherProducts.items?.filter(
+          (val, index, self) =>
+            index ===
+            self.findIndex((t) => t.item_basic.itemid === val.item_basic.itemid)
+        );
+        otherProducts.items = otherProducts.items?.filter(
           (i) =>
             (i.item_basic.voucher_info
               ? i.item_basic.price_min -

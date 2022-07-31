@@ -73,6 +73,7 @@
     margin: 5px;
     overflow-y: auto;
     margin-inline: auto;
+    overflow-x: hidden;
 }
 
 #savings-and-deals-modal-clear {
