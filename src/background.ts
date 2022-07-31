@@ -98,7 +98,11 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             (i) => i.item_basic.price_min / productData.data.price_min > 0.3
           )
           ?.slice(0, 10)
-          .sort((a, b) => b.item_basic.price_min - a.item_basic.price_min);
+          .sort((a, b) => b.item_basic.price_min - a.item_basic.price_min)
+          .filter(
+            (i) =>
+              i.item_basic.catid === productData.data.categories?.[0].catid || 0
+          );
         sendMessageToContent(tab.id || -1, {
           type: "SUGGESTIONS",
           items: rankedItems || [],
