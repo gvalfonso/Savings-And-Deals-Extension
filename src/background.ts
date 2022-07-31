@@ -126,7 +126,6 @@ function getBestDiscount(currentPrice: number, vouchers: ShopVouchersEntity[]) {
       highestVoucherDiscountValue = discountValue;
     }
   });
-  console.log("SA");
   return { highestVoucher, highestVoucherDiscountValue };
 }
 
