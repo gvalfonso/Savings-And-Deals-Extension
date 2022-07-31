@@ -33,17 +33,11 @@ chrome.runtime.onMessage.addListener(function (
         });
       } else if ((msg as SuggestionsMessage).items.length === 0) {
         const imgDiv = document.createElement("img");
-        imgDiv.src = chrome.runtime.getURL("images/best-deal-sticker.png");
-        imgDiv.height = 200;
-        imgDiv.width = 200;
-        imgDiv.style.padding = "12%";
-        imgDiv.style.left = "12%";
+        imgDiv.src = chrome.runtime.getURL("images/loading.gif");
+        imgDiv.id = "savings-and-deals-loading";
         helperModal.appendChild(imgDiv);
         const titleDiv = document.createElement("div");
-        titleDiv.style.padding = "10%";
-        titleDiv.style.top = "80px";
-        titleDiv.style.fontSize = "20px";
-        titleDiv.style.textAlign = "center";
+        titleDiv.className = "savings-and-deals-item-title";
         titleDiv.innerText = "You have the best deal!";
         helperModal.appendChild(titleDiv);
       }
@@ -54,12 +48,8 @@ chrome.runtime.onMessage.addListener(function (
     case "LOADING":
       clearHelperModal();
       const imgDiv = document.createElement("img");
-      imgDiv.src = chrome.runtime.getURL("loading.gif");
-      imgDiv.height = 200;
-      imgDiv.width = 200;
-      imgDiv.style.position = "absolute";
-      imgDiv.style.left = "50px";
-      imgDiv.style.top = "70px";
+      imgDiv.src = chrome.runtime.getURL("images/loading.gif");
+      imgDiv.id = "savings-and-deals-loading";
       helperModal.appendChild(imgDiv);
       break;
     default:
@@ -81,8 +71,8 @@ function toggleModal() {
 }
 
 function toggleIcon() {
-  iconButton.id =
-    iconButton.id === "savings-and-deals-icon-hidden"
+  iconButton.className =
+    iconButton.className === "savings-and-deals-icon-hidden"
       ? "savings-and-deals-icon"
       : "savings-and-deals-icon-hidden";
   helperModal.id = "savings-and-deals-modal-clear";
@@ -90,8 +80,8 @@ function toggleIcon() {
 
 function createHelper(config: typeof settings) {
   iconButton = document.createElement("a");
-  if (config.iconHidden) iconButton.id = "savings-and-deals-icon-hidden";
-  else iconButton.id = "savings-and-deals-icon";
+  if (config.iconHidden) iconButton.className = "savings-and-deals-icon-hidden";
+  else iconButton.className = "savings-and-deals-icon";
   iconButton.onclick = toggleModal;
 
   logoContainer = document.createElement("div");
@@ -111,11 +101,7 @@ function createHelper(config: typeof settings) {
 
   const imgDiv = document.createElement("img");
   imgDiv.src = chrome.runtime.getURL("images/loading.gif");
-  imgDiv.height = 200;
-  imgDiv.width = 200;
-  imgDiv.style.position = "absolute";
-  imgDiv.style.left = "50px";
-  imgDiv.style.top = "70px";
+  imgDiv.id = "savings-and-deals-loading";
   helperModal.appendChild(imgDiv);
 }
 

@@ -1,4 +1,4 @@
-#savings-and-deals-icon {
+.savings-and-deals-icon {
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
     /* background: #79dcf1; */
@@ -8,13 +8,20 @@
     top: 20%;
     right: 0px;
     z-index: 9000000000000000000;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.5);
+    box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
     background-image: linear-gradient(#79dcf1, #6abfd3);
     -webkit-animation: animation 0.3s ease-in-out;
+    transition: 0.2s;
+}
+
+.savings-and-deals-icon:hover {
+    margin-top: -3px;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.5);
+    background-image: linear-gradient(#7ce0f7, #6abfd3);
 }
 
 
-#savings-and-deals-icon-hidden {
+.savings-and-deals-icon-hidden {
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
     /* background: #79dcf1; */
@@ -85,6 +92,14 @@
     margin: 5px;
     overflow-y: auto;
     margin-inline: auto;
+    pointer-events: none;
+}
+
+.savings-and-deals-item-title {
+    padding: 10%;
+    top: 80px;
+    font-size: 20px;
+    text-align: center;
 }
 
 .savings-and-deals-item-box {
@@ -104,3 +119,18 @@
     transition: 0.3s;
 }
 
+#savings-and-deals-loading {
+    height: 200px;
+    width: 200px;
+    position: absolute;
+    left: 50px;
+    top: 70px
+}
+
+#savings-and-deals-best-deal {
+    height: 200px;
+    width: 200px;
+    position: absolute;
+    left: 50px;
+    top: 70px
+}
