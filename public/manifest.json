@@ -17,22 +17,21 @@
   ],
   "host_permissions": ["https://shopee.ph/"],
   "icons": {
-    "128": "icon128.png"
+    "128": "images/icon128.png"
   },
   "action": {
     "default_icon": {
-      "128": "icon128.png"
+      "128": "images/icon128.png"
     },
     "default_title": "Savings and Deals"
   },
   "web_accessible_resources": [
     {
       "resources": [
-        "helper-display.html",
-        "icon128.png",
-        "icon128letters.png",
-        "best-deal-sticker.png",
-        "loading.gif"
+        "images/icon128.png",
+        "images/icon128letters.png",
+        "images/best-deal-sticker.png",
+        "images/loading.gif"
       ],
       "matches": ["https://shopee.ph/*"]
     }

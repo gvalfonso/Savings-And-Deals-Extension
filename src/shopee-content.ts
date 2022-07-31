@@ -33,7 +33,7 @@ chrome.runtime.onMessage.addListener(function (
         });
       } else if ((msg as SuggestionsMessage).items.length === 0) {
         const imgDiv = document.createElement("img");
-        imgDiv.src = chrome.runtime.getURL("best-deal-sticker.png");
+        imgDiv.src = chrome.runtime.getURL("images/best-deal-sticker.png");
         imgDiv.height = 200;
         imgDiv.width = 200;
         imgDiv.style.padding = "12%";
@@ -100,7 +100,7 @@ function createHelper(config: typeof settings) {
 
   logoImg = document.createElement("img");
   logoImg.id = "savings-and-deals-image-logo";
-  logoImg.src = chrome.runtime.getURL("icon128letters.png");
+  logoImg.src = chrome.runtime.getURL("images/icon128letters.png");
   logoContainer.appendChild(logoImg);
 
   document.getElementsByTagName("body")[0].appendChild(iconButton);
@@ -110,7 +110,7 @@ function createHelper(config: typeof settings) {
   document.getElementsByTagName("body")[0].appendChild(helperModal);
 
   const imgDiv = document.createElement("img");
-  imgDiv.src = chrome.runtime.getURL("loading.gif");
+  imgDiv.src = chrome.runtime.getURL("images/loading.gif");
   imgDiv.height = 200;
   imgDiv.width = 200;
   imgDiv.style.position = "absolute";
