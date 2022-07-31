@@ -108,40 +108,34 @@ function createItem(item: ItemsEntity): HTMLDivElement {
   itemWrapper.style.padding = "5px 0";
   const itemDiv = document.createElement("a");
   itemDiv.className = "savings-and-deals-item-box";
-  itemDiv.style.color = "black";
+  itemDiv.href = `https://shopee.ph/product/${item.item_basic.shopid}/${item.item_basic.itemid}`;
+
   const productImage = document.createElement("img");
   productImage.src = "https://cf.shopee.ph/file/" + item.item_basic.image;
-  productImage.width = 100;
-  productImage.height = 100;
-  productImage.style.marginRight = "8px";
-  productImage.style.float = "left";
+  productImage.id = "savings-and-deals-rating-image";
   itemDiv.appendChild(productImage);
+
   const itemTitle = document.createElement("a");
   itemTitle.ariaSetSize = "8";
   itemTitle.innerText = item.item_basic.name.substring(0, 50);
   if (item.item_basic.name.length > 50)
     itemTitle.innerText = itemTitle.innerText + "...";
-  itemDiv.href = `https://shopee.ph/product/${item.item_basic.shopid}/${item.item_basic.itemid}`;
   itemTitle.style.color = "black";
   itemDiv.appendChild(itemTitle);
 
   const price = document.createElement("p");
   price.innerText =
-    "₱" + (item.item_basic.price_min_after_discount / 100000).toString();
-  price.style.fontSize = "10";
-  price.style.position = "absolute";
-  price.style.left = "110px";
-  price.style.bottom = "0px";
+    "₱" +
+    (item.item_basic.price_min_after_discount / 100000)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  price.id = "savings-and-deals-rating-price";
   itemDiv.appendChild(price);
 
   const rating = document.createElement("p");
   rating.innerText =
     "★ " + item.item_basic.item_rating.rating_star.toFixed(2).toString();
-  rating.style.fontSize = "10";
-  rating.style.color = "Red";
-  rating.style.position = "absolute";
-  rating.style.right = "10px";
-  rating.style.bottom = "0px";
+  rating.id = "savings-and-deals-rating-star";
   itemDiv.appendChild(rating);
   itemWrapper.appendChild(itemDiv);
   return itemWrapper;

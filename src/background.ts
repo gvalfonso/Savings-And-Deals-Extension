@@ -115,15 +115,15 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
           ?.filter((i) => i.item_basic.price_min / targetProduct.price > 0.3)
           ?.slice(0, 10)
           .sort((a, b) => b.item_basic.price_min - a.item_basic.price_min);
+        suggestions[tab.url] = {
+          time: new Date().getTime(),
+          items: rankedItems,
+        };
 
         sendMessageToContent(tab.id || -1, {
           type: "SUGGESTIONS",
           items: rankedItems || [],
         });
-        suggestions[tab.url] = {
-          time: new Date().getTime(),
-          items: rankedItems,
-        };
       } else {
         sendMessageToContent(tab.id || -1, { type: "LOADING" });
       }
