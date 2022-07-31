@@ -54,6 +54,7 @@ export interface ItemBasic {
   itemid: number;
   shopid: number;
   name: string;
+  price_min_after_discount: number;
   label_ids?: number[] | null;
   image: string;
   images?: string[] | null;

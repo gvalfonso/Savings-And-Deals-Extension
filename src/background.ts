@@ -57,61 +57,62 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
           productData.data.price_min,
           productData.data.shop_vouchers || []
         );
+        var targetProduct: Record<string, any> = {
+          price: productData.data.price_min,
+          name: productData.data.name,
+          shopid: productData.data.shopid,
+          itemid: productData.data.itemid,
+          catid: productData.data.categories?.[0].catid || 0,
+        };
         if (bestVoucher) {
-          productData.data.price_min =
-            productData.data.price_min -
-            bestVoucher.highestVoucherDiscountValue;
+          targetProduct = {
+            ...targetProduct,
+            voucher: bestVoucher.highestVoucherDiscountValue,
+            price:
+              productData.data.price_min -
+              bestVoucher.highestVoucherDiscountValue,
+          };
         }
         const otherProducts = await searchForOtherProducts(
           productData.data.name
         );
         const otherRecommendedProducts = await searchForRecommendedProducts(
-          productData.data.name,
-          productData.data.shopid,
-          productData.data.itemid,
-          productData.data.categories?.[0].catid || 0
+          targetProduct.name,
+          targetProduct.shopid,
+          targetProduct.itemid,
+          targetProduct.catid
         );
         otherProducts.items = [
           ...(otherProducts.items || []),
           ...((
             otherRecommendedProducts.data.sections?.[0]?.data?.item as any
           ).map((i: any) => ({ item_basic: i })) || []),
-        ].filter(
-          (i) =>
-            i.item_basic.catid === productData.data.categories?.[0].catid || 0
-        );
-        otherProducts.items = otherProducts.items?.filter((i) => i.item_basic);
+        ].filter((i) => i.item_basic.catid === targetProduct.catid);
         otherProducts.items = otherProducts.items?.filter(
           (val, index, self) =>
+            val.item_basic &&
             index ===
-            self.findIndex((t) => t.item_basic.itemid === val.item_basic.itemid)
+              self.findIndex(
+                (t) => t.item_basic.itemid === val.item_basic.itemid
+              ) &&
+            val.item_basic.sold > 0 &&
+            val.item_basic.item_rating.rating_star > 4 &&
+            val.item_basic.itemid.toString() != itemid
         );
-        otherProducts.items = otherProducts.items?.filter(
+        otherProducts.items.forEach(
           (i) =>
-            (i.item_basic.voucher_info
-              ? i.item_basic.price_min -
-                parseDiscount(
-                  i.item_basic.price_min,
-                  i.item_basic.voucher_info.label
-                )
-              : i.item_basic.price_min) < productData.data.price_min &&
-            i.item_basic.sold > 0 &&
-            i.item_basic.item_rating.rating_star > 4 &&
-            i.item_basic.itemid.toString() != itemid
-        );
-        otherProducts.items?.forEach(
-          (i) =>
-            (i.item_basic.price_min =
+            (i.item_basic.price_min_after_discount =
               i.item_basic.price_min -
               parseDiscount(
                 i.item_basic.price_min,
                 i.item_basic.voucher_info?.label || ""
               ))
         );
+        otherProducts.items = otherProducts.items?.filter(
+          (i) => i.item_basic.price_min_after_discount < targetProduct.price
+        );
         const rankedItems = otherProducts.items
-          ?.filter(
-            (i) => i.item_basic.price_min / productData.data.price_min > 0.3
-          )
+          ?.filter((i) => i.item_basic.price_min / targetProduct.price > 0.3)
           ?.slice(0, 10)
           .sort((a, b) => b.item_basic.price_min - a.item_basic.price_min);
 

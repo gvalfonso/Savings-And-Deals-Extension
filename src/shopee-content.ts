@@ -126,7 +126,8 @@ function createItem(item: ItemsEntity): HTMLDivElement {
   itemDiv.appendChild(itemTitle);
 
   const price = document.createElement("p");
-  price.innerText = "₱" + (item.item_basic.price_min / 100000).toString();
+  price.innerText =
+    "₱" + (item.item_basic.price_min_after_discount / 100000).toString();
   price.style.fontSize = "10";
   price.style.position = "absolute";
   price.style.left = "110px";
