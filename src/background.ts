@@ -7,6 +7,8 @@ export const settings = {
   iconHidden: false,
 };
 
+const suggestions: Record<string, { time: number; items: any[] }> = {};
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.type) {
     case "GET_CONFIG":
@@ -33,6 +35,16 @@ chrome.action.onClicked.addListener((tab) => {
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete") {
     if (tab.url) {
+      if (
+        suggestions[tab.url] &&
+        new Date().getTime() - suggestions[tab.url].time < 60000
+      ) {
+        sendMessageToContent(tab.id || -1, {
+          type: "SUGGESTIONS",
+          items: suggestions[tab.url].items || [],
+        });
+        return;
+      }
       const { shopid, itemid } = getIds(tab.url);
       if (itemid && shopid) {
         sendMessageToContent(tab.id || -1, { type: "LOADING" });
@@ -64,7 +76,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
           ...((
             otherRecommendedProducts.data.sections?.[0]?.data?.item as any
           ).map((i: any) => ({ item_basic: i })) || []),
-        ];
+        ].filter(
+          (i) =>
+            i.item_basic.catid === productData.data.categories?.[0].catid || 0
+        );
         otherProducts.items = otherProducts.items?.filter((i) => i.item_basic);
         otherProducts.items = otherProducts.items?.filter(
           (val, index, self) =>
@@ -98,15 +113,16 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             (i) => i.item_basic.price_min / productData.data.price_min > 0.3
           )
           ?.slice(0, 10)
-          .sort((a, b) => b.item_basic.price_min - a.item_basic.price_min)
-          .filter(
-            (i) =>
-              i.item_basic.catid === productData.data.categories?.[0].catid || 0
-          );
+          .sort((a, b) => b.item_basic.price_min - a.item_basic.price_min);
+
         sendMessageToContent(tab.id || -1, {
           type: "SUGGESTIONS",
           items: rankedItems || [],
         });
+        suggestions[tab.url] = {
+          time: new Date().getTime(),
+          items: rankedItems,
+        };
       } else {
         sendMessageToContent(tab.id || -1, { type: "LOADING" });
       }
