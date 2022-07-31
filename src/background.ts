@@ -18,11 +18,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 chrome.action.onClicked.addListener((tab) => {
-  // Send a message to the active tab
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     var activeTab = tabs[0];
     settings.iconHidden = !settings.iconHidden;
-    chrome.tabs.sendMessage(activeTab.id || -1, { type: "TOGGLE" });
+    sendMessageToContent(activeTab.id || -1, { type: "TOGGLE" });
   });
 });
 
@@ -31,7 +30,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     if (tab.url) {
       const { shopid, itemid } = getIds(tab.url);
       if (itemid && shopid) {
-        chrome.tabs.sendMessage(tabId || -1, { type: "LOADING" });
+        sendMessageToContent(tab.id || -1, { type: "LOADING" });
         const productData = await getProductData(itemid, shopid);
         const bestVoucher = getBestDiscount(
           productData.data.price_min,
@@ -81,23 +80,20 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
           )
           ?.slice(0, 10)
           .sort((a, b) => a.item_basic.price_min - b.item_basic.price_min);
-        console.log(rankedItems?.length);
-        sendMessageToContent(tab, rankedItems || []);
+        sendMessageToContent(tab.id || -1, rankedItems || []);
       } else {
-        chrome.tabs.sendMessage(tabId || -1, { type: "LOADING" });
+        sendMessageToContent(tab.id || -1, { type: "LOADING" });
       }
     }
   }
 });
 
-async function sendMessageToContent(
-  tab: chrome.tabs.Tab,
-  rankedItems: ItemsEntity[]
-) {
-  chrome.tabs.sendMessage(tab.id || -1, {
-    type: "SUGGESTIONS",
-    items: rankedItems,
-  });
+async function sendMessageToContent(tabId: number, data: Record<string, any>) {
+  try {
+    chrome.tabs.sendMessage(tabId, data);
+  } catch {
+    console.log("Message was sent too early.");
+  }
 }
 
 function getBestDiscount(currentPrice: number, vouchers: ShopVouchersEntity[]) {
