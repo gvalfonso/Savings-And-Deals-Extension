@@ -4,12 +4,17 @@ import { ShopeeProductData, ShopVouchersEntity } from "./product.type";
 import { RecommendedItemsShopeeSearchResult } from "./recommended.type";
 import { ShopeeSearchResult } from "./search.type";
 
-export async function getShopeeSuggestions(itemid: string, shopid: string) {
+export async function getShopeeSuggestions(
+  itemid: string,
+  shopid: string
+): Promise<{
+  success: boolean;
+  suggestions: Suggestion[];
+  isNotProduct: boolean;
+}> {
   var productData = await getProductData(itemid, shopid);
-  while (!productData.data) {
-    productData = await getProductData(itemid, shopid);
-    await sleep(5000);
-  }
+  if (!productData.data)
+    return { success: true, suggestions: [], isNotProduct: true };
   const bestVoucher = getBestDiscount(
     productData.data.price_min,
     productData.data.shop_vouchers || []
@@ -33,11 +38,15 @@ export async function getShopeeSuggestions(itemid: string, shopid: string) {
     targetProduct,
     itemid
   );
-  return [...shopeeSuggestions];
   // const lazadaSuggestions = await getLazadaSuggestionsFromOutside(
   //   targetProduct.name,
   //   targetProduct.price
   // );
+  return {
+    success: true,
+    suggestions: [...shopeeSuggestions],
+    isNotProduct: false,
+  };
 }
 export async function getShopeeSuggestionsFromInsideShopee(
   targetProduct: Record<string, any>,
@@ -73,16 +82,6 @@ export async function getShopeeSuggestionsFromInsideShopee(
       val.item_basic.item_rating.rating_star > 4 &&
       val.item_basic.itemid.toString() != itemid
   );
-  otherProducts.items.forEach((i: any) =>
-    console.log(
-      i.item_basic.price_min,
-      i.item_basic.voucher_info,
-      parseDiscount(
-        i.item_basic.price_min,
-        i.item_basic.voucher_info?.label || ""
-      )
-    )
-  );
 
   otherProducts.items.forEach(
     (i: any) =>
@@ -108,7 +107,6 @@ export async function getShopeeSuggestionsFromInsideShopee(
       image: `https://cf.shopee.ph/file/${item.item_basic.image}`,
       logo: "images/shopee-logo.png",
     }));
-  console.log(JSON.stringify(rankedItems, null, 4));
   return rankedItems;
 }
 
