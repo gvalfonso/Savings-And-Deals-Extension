@@ -4,11 +4,7 @@ import { ShopeeProductData, ShopVouchersEntity } from "./product.type";
 import { RecommendedItemsShopeeSearchResult } from "./recommended.type";
 import { ShopeeSearchResult } from "./search.type";
 
-export async function getShopeeSuggestions(
-  itemid: string,
-  shopid: string,
-  url: string
-) {
+export async function getShopeeSuggestions(itemid: string, shopid: string) {
   var productData = await getProductData(itemid, shopid);
   while (!productData.data) {
     productData = await getProductData(itemid, shopid);
@@ -35,9 +31,7 @@ export async function getShopeeSuggestions(
   }
   const shopeeSuggestions = await getShopeeSuggestionsFromInsideShopee(
     targetProduct,
-    itemid,
-    shopid,
-    url
+    itemid
   );
   return [...shopeeSuggestions];
   // const lazadaSuggestions = await getLazadaSuggestionsFromOutside(
@@ -47,9 +41,7 @@ export async function getShopeeSuggestions(
 }
 export async function getShopeeSuggestionsFromInsideShopee(
   targetProduct: Record<string, any>,
-  itemid: string,
-  shopid: string,
-  url: string
+  itemid: string
 ) {
   const otherProducts = await searchForOtherProducts(targetProduct.name);
   const otherRecommendedProducts = await searchForRecommendedProducts(
@@ -81,6 +73,17 @@ export async function getShopeeSuggestionsFromInsideShopee(
       val.item_basic.item_rating.rating_star > 4 &&
       val.item_basic.itemid.toString() != itemid
   );
+  otherProducts.items.forEach((i: any) =>
+    console.log(
+      i.item_basic.price_min,
+      i.item_basic.voucher_info,
+      parseDiscount(
+        i.item_basic.price_min,
+        i.item_basic.voucher_info?.label || ""
+      )
+    )
+  );
+
   otherProducts.items.forEach(
     (i: any) =>
       (i.item_basic.price_min_after_discount =
@@ -105,6 +108,7 @@ export async function getShopeeSuggestionsFromInsideShopee(
       image: `https://cf.shopee.ph/file/${item.item_basic.image}`,
       logo: "images/shopee-logo.png",
     }));
+  console.log(JSON.stringify(rankedItems, null, 4));
   return rankedItems;
 }
 
@@ -147,11 +151,12 @@ function parseDiscount(itemPrice: number, voucherLabel: string) {
   const discount = voucherLabel.split(" ")?.[0];
   var discountAmount = 0;
   if (discount.includes("%")) {
-    discountAmount = itemPrice * +discount.replace(/%/g, "");
+    discountAmount = itemPrice * +discount.replace(/%/g, "") * 0.01;
   } else if (discount.includes("₱")) {
-    discountAmount = +discount.replace(/₱/g, "") * 100000;
     if (discount.includes("K")) {
       discountAmount = +discount.replace(/[₱K]/g, "") * 100000 * 1000;
+    } else {
+      discountAmount = +discount.replace(/₱/g, "") * 100000;
     }
   }
   return discountAmount || 0;

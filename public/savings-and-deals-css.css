@@ -84,7 +84,7 @@
 
 .savings-and-deals-item-title {
     display: flex;
-    font-size: 14px;
+    font-size: 14.5px;
     color: black;
     top: 8px;
     position: absolute;
@@ -92,7 +92,7 @@
 }
 
 .savings-and-deals-item-box {
-    width: 98%;
+    width: 100%;
     height: 100px;
     display: flex;
     background-image: linear-gradient(#ffffff, #f7f7f7);
@@ -125,14 +125,14 @@
 }
 
 #savings-and-deals-rating-price {
-    font-size: 10;
+    font-size: 14.5px;
     position: absolute;
     left: 108px;
     bottom: 8px
 }
 
 #savings-and-deals-rating-star {
-    font-size: 10;
+    font-size: 14.5px;
     color: Red;
     position: absolute;
     right: 10px;

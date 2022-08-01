@@ -67,6 +67,12 @@ function toggleModal() {
     helperModal.id === "savings-and-deals-modal-opaque"
       ? "savings-and-deals-modal-clear"
       : "savings-and-deals-modal-opaque";
+  chrome.runtime.sendMessage({
+    type: "SET_CONFIG",
+    settings: {
+      modalHidden: helperModal.id === "savings-and-deals-modal-clear",
+    },
+  });
 }
 
 function toggleIcon(hidden: boolean) {
@@ -94,7 +100,8 @@ function createHelper(config: typeof settings) {
   document.getElementsByTagName("body")[0].appendChild(iconButton);
 
   helperModal = document.createElement("div");
-  helperModal.id = "savings-and-deals-modal-clear";
+  if (config.modalHidden) helperModal.id = "savings-and-deals-modal-clear";
+  else helperModal.id = "savings-and-deals-modal-opaque";
   document.getElementsByTagName("body")[0].appendChild(helperModal);
 
   const imgDiv = document.createElement("img");

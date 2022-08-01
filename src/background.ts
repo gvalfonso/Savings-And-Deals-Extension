@@ -9,15 +9,25 @@ import {
 import { Suggestion } from "./suggestion.type";
 import { sleep } from "./utils";
 
-export const settings = {
+export var settings = {
   iconHidden: false,
+  modalHidden: true,
 };
 const suggestions: Record<string, { time: number; items: any[] }> = {};
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log(request.type);
   switch (request.type) {
     case "GET_CONFIG":
+      console.log(settings);
       sendResponse(settings);
+      break;
+    case "SET_CONFIG":
+      settings = {
+        ...settings,
+        ...request.settings,
+      };
+      console.log(settings);
       break;
     default:
       break;
@@ -55,11 +65,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         const { shopid, itemid } = getIds(tab.url);
         if (itemid && shopid) {
           sendMessageToContent(tab.id || -1, { type: "LOADING" });
-          const shopeeSuggestions = await getShopeeSuggestions(
-            itemid,
-            shopid,
-            tab.url
-          );
+          const shopeeSuggestions = await getShopeeSuggestions(itemid, shopid);
           combinedSuggestions = [
             ...shopeeSuggestions,
             // ...lazadaSuggestions,
@@ -71,16 +77,15 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             time: new Date().getTime(),
             items: combinedSuggestions,
           };
-          return combinedSuggestions;
+          sendMessageToContent(tab.id || -1, {
+            type: "SUGGESTIONS",
+            items: combinedSuggestions,
+          });
         } else {
           sendMessageToContent(tab.id || -1, { type: "LOADING" });
         }
       } else if (tab.url.includes("lazada")) {
       }
-      sendMessageToContent(tab.id || -1, {
-        type: "SUGGESTIONS",
-        items: combinedSuggestions,
-      });
     }
   }
 });
