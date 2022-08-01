@@ -1,6 +1,8 @@
+import { LazadaSearchResult } from "./lazada.types";
 import { ShopeeProductData, ShopVouchersEntity } from "./product.type";
-import { RecommendedSearchType } from "./recommended.type";
+import { RecommendedItemsShopeeSearchResult } from "./recommended.type";
 import { ItemsEntity, ShopeeSearchResult } from "./search.type";
+import { Suggestion } from "./suggestion.type";
 import { sleep } from "./utils";
 
 export const settings = {
@@ -45,91 +47,148 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         });
         return;
       }
-      const { shopid, itemid } = getIds(tab.url);
-      if (itemid && shopid) {
-        sendMessageToContent(tab.id || -1, { type: "LOADING" });
-        var productData = await getProductData(itemid, shopid);
-        while (!productData.data) {
-          productData = await getProductData(itemid, shopid);
-          await sleep(5000);
-        }
-        const bestVoucher = getBestDiscount(
-          productData.data.price_min,
-          productData.data.shop_vouchers || []
-        );
-        var targetProduct: Record<string, any> = {
-          price: productData.data.price_min,
-          name: productData.data.name,
-          shopid: productData.data.shopid,
-          itemid: productData.data.itemid,
-          catid: productData.data.categories?.[0].catid || 0,
-        };
-        if (bestVoucher) {
-          targetProduct = {
-            ...targetProduct,
-            voucher: bestVoucher.highestVoucherDiscountValue,
-            price:
-              productData.data.price_min -
-              bestVoucher.highestVoucherDiscountValue,
+      var combinedSuggestions: Suggestion[] = [];
+      if (tab.url.includes("shopee")) {
+        const { shopid, itemid } = getIds(tab.url);
+        if (itemid && shopid) {
+          sendMessageToContent(tab.id || -1, { type: "LOADING" });
+          var productData = await getProductData(itemid, shopid);
+          while (!productData.data) {
+            productData = await getProductData(itemid, shopid);
+            await sleep(5000);
+          }
+          const bestVoucher = getBestDiscount(
+            productData.data.price_min,
+            productData.data.shop_vouchers || []
+          );
+          var targetProduct: Record<string, any> = {
+            price: productData.data.price_min,
+            name: productData.data.name,
+            shopid: productData.data.shopid,
+            itemid: productData.data.itemid,
+            catid: productData.data.categories?.[0].catid || 0,
           };
+          if (bestVoucher) {
+            targetProduct = {
+              ...targetProduct,
+              voucher: bestVoucher.highestVoucherDiscountValue,
+              price:
+                productData.data.price_min -
+                bestVoucher.highestVoucherDiscountValue,
+            };
+          }
+          const shopeeSuggestions = await getShopeeSuggestionsFromInsideShopee(
+            targetProduct,
+            itemid,
+            shopid,
+            tab.url
+          );
+          // const lazadaSuggestions = await getLazadaSuggestionsFromOutside(
+          //   targetProduct.name,
+          //   targetProduct.price
+          // );
+          combinedSuggestions = [
+            ...shopeeSuggestions,
+            // ...lazadaSuggestions,
+          ];
+          combinedSuggestions = combinedSuggestions.sort(
+            (a, b) => b.price - a.price
+          );
+        } else {
+          sendMessageToContent(tab.id || -1, { type: "LOADING" });
         }
-        const otherProducts = await searchForOtherProducts(
-          productData.data.name
-        );
-        const otherRecommendedProducts = await searchForRecommendedProducts(
-          targetProduct.name,
-          targetProduct.shopid,
-          targetProduct.itemid,
-          targetProduct.catid
-        );
-        otherProducts.items = [
-          ...(otherProducts.items || []),
-          ...((
-            otherRecommendedProducts.data.sections?.[0]?.data?.item as any
-          ).map((i: any) => ({ item_basic: i })) || []),
-        ].filter((i) => i.item_basic.catid === targetProduct.catid);
-        otherProducts.items = otherProducts.items?.filter(
-          (val, index, self) =>
-            val.item_basic &&
-            index ===
-              self.findIndex(
-                (t) => t.item_basic.itemid === val.item_basic.itemid
-              ) &&
-            val.item_basic.sold > 0 &&
-            val.item_basic.item_rating.rating_star > 4 &&
-            val.item_basic.itemid.toString() != itemid
-        );
-        otherProducts.items.forEach(
-          (i) =>
-            (i.item_basic.price_min_after_discount =
-              i.item_basic.price_min -
-              parseDiscount(
-                i.item_basic.price_min,
-                i.item_basic.voucher_info?.label || ""
-              ))
-        );
-        otherProducts.items = otherProducts.items?.filter(
-          (i) => i.item_basic.price_min_after_discount < targetProduct.price
-        );
-        const rankedItems = otherProducts.items
-          ?.filter((i) => i.item_basic.price_min / targetProduct.price > 0.3)
-          ?.slice(0, 10)
-          .sort((a, b) => b.item_basic.price_min - a.item_basic.price_min);
-        suggestions[tab.url] = {
-          time: new Date().getTime(),
-          items: rankedItems,
-        };
-
-        sendMessageToContent(tab.id || -1, {
-          type: "SUGGESTIONS",
-          items: rankedItems || [],
-        });
-      } else {
-        sendMessageToContent(tab.id || -1, { type: "LOADING" });
+      } else if (tab.url.includes("lazada")) {
       }
+      sendMessageToContent(tab.id || -1, {
+        type: "SUGGESTIONS",
+        items: combinedSuggestions,
+      });
     }
   }
 });
+
+async function getLazadaSuggestionsFromOutside(name: string, price: number) {
+  const lazadaResult = await searchLazada(name);
+  const filteredLazadaItems = lazadaResult.mods.listItems
+    ?.filter((item) => +item.price < price && +item.ratingScore > 4)
+    .filter((item) => +item.price / price > 0.3)
+    ?.slice(0, 10)
+    .sort((a, b) => +b.price - +a.price)
+    .map((item) => ({
+      name: item.name,
+      price: +item.price,
+      rating: +item.ratingScore,
+      url: `https:${item.itemUrl}`,
+      image: item.image,
+      logo: "images/lazada-logo.png",
+    }));
+  return filteredLazadaItems || [];
+}
+
+async function getShopeeSuggestionsFromInsideShopee(
+  targetProduct: Record<string, any>,
+  itemid: string,
+  shopid: string,
+  url: string
+) {
+  const otherProducts = await searchForOtherProducts(targetProduct.name);
+  const otherRecommendedProducts = await searchForRecommendedProducts(
+    targetProduct.name,
+    targetProduct.shopid,
+    targetProduct.itemid,
+    targetProduct.catid
+  );
+  otherProducts.items = [
+    ...(otherProducts.items || []),
+    ...((otherRecommendedProducts.data.sections?.[0]?.data?.item as any).map(
+      (i: any) => ({ item_basic: i })
+    ) || []),
+  ];
+  otherProducts.items = [
+    ...(otherProducts.items || []),
+    ...((otherRecommendedProducts.data.sections?.[0]?.data?.item as any).map(
+      (i: any) => ({ item_basic: i })
+    ) || []),
+  ].filter((i) => i.item_basic.catid === targetProduct.catid);
+  otherProducts.items = otherProducts.items?.filter(
+    (val, index, self) =>
+      val.item_basic &&
+      index ===
+        self.findIndex((t) => t.item_basic.itemid === val.item_basic.itemid) &&
+      val.item_basic.sold > 0 &&
+      val.item_basic.item_rating.rating_star > 4 &&
+      val.item_basic.itemid.toString() != itemid
+  );
+  otherProducts.items.forEach(
+    (i) =>
+      (i.item_basic.price_min_after_discount =
+        i.item_basic.price_min -
+        parseDiscount(
+          i.item_basic.price_min,
+          i.item_basic.voucher_info?.label || ""
+        ))
+  );
+  otherProducts.items = otherProducts.items?.filter(
+    (i) => i.item_basic.price_min_after_discount < targetProduct.price
+  );
+  const rankedItems: Suggestion[] = otherProducts.items
+    ?.filter((i) => i.item_basic.price_min / targetProduct.price > 0.3)
+    ?.slice(0, 10)
+    .sort((a, b) => b.item_basic.price_min - a.item_basic.price_min)
+    .map((item) => ({
+      name: item.item_basic.name,
+      price: item.item_basic.price_min_after_discount / 100000,
+      rating: item.item_basic.item_rating.rating_star,
+      url: `https://shopee.ph/product/${item.item_basic.shopid}/${item.item_basic.itemid}`,
+      image: `https://cf.shopee.ph/file/${item.item_basic.image}`,
+      logo: "images/shopee-logo.png",
+    }));
+  suggestions[url] = {
+    time: new Date().getTime(),
+    items: rankedItems,
+  };
+  return rankedItems;
+}
 
 async function sendMessageToContent(tabId: number, data: Record<string, any>) {
   chrome.tabs.sendMessage(tabId, data);
@@ -180,6 +239,18 @@ function getIds(url: string) {
   return { shopid: undefined, itemid: undefined };
 }
 
+async function searchLazada(name: string): Promise<LazadaSearchResult> {
+  return (
+    await fetch(
+      `https://www.lazada.com.ph/catalog/?_keyori=ss&ajax=true&from=input&isFirstRequest=true&page=1&q=${name}`,
+      {
+        method: "GET",
+        mode: "no-cors",
+      }
+    )
+  ).json();
+}
+
 async function getProductData(
   itemid: string,
   shopid: string
@@ -216,7 +287,7 @@ async function searchForRecommendedProducts(
   shopid: number,
   itemid: number,
   categoryid: number
-): Promise<RecommendedSearchType> {
+): Promise<RecommendedItemsShopeeSearchResult> {
   return (
     await fetch(
       `https://shopee.ph/api/v4/recommend/recommend?bundle=product_detail_page&catid=${categoryid}&item_card=3&itemid=${itemid}&keyword=${encodeURIComponent(

@@ -105,6 +105,15 @@
     transition: 0.3s;
 }
 
+#savings-and-deals-rating-site-logo {
+    width: 20px;
+    height: 20px;
+    z-index: 990000;
+    left: 5px;
+    bottom: 5px;
+    position: absolute;
+}
+
 #savings-and-deals-rating-image {
     width: 100px;
     height: 100px;

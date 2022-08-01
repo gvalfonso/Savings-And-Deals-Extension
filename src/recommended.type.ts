@@ -1,4 +1,4 @@
-export interface RecommendedSearchType {
+export interface RecommendedItemsShopeeSearchResult {
   bff_meta?: null;
   error: number;
   error_msg?: null;

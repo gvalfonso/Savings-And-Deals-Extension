@@ -32,7 +32,9 @@
         "images/icon128letters.png",
         "images/best-deal-sticker.png",
         "images/loading.gif",
-        "images/coupon-icon.png"
+        "images/coupon-icon.png",
+        "images/shopee-logo.png",
+        "images/lazada-logo.png"
       ],
       "matches": ["https://shopee.ph/*"]
     }

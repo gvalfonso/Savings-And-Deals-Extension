@@ -1,5 +1,6 @@
 import { settings } from "./background";
 import { ItemsEntity } from "./search.type";
+import { Suggestion } from "./suggestion.type";
 
 var helperModal: HTMLDivElement;
 var iconButton: HTMLAnchorElement;
@@ -13,7 +14,7 @@ interface ToggleMessage extends MessageBaseType {
   iconHidden: boolean;
 }
 interface SuggestionsMessage extends MessageBaseType {
-  items: ItemsEntity[];
+  items: Suggestion[];
 }
 
 chrome.runtime.sendMessage(
@@ -103,37 +104,37 @@ function createHelper(config: typeof settings) {
   helperModal.appendChild(imgDiv);
 }
 
-function createItem(item: ItemsEntity): HTMLDivElement {
+function createItem(item: Suggestion): HTMLDivElement {
   const itemWrapper = document.createElement("div");
   itemWrapper.style.padding = "2px 0";
   const itemDiv = document.createElement("a");
   itemDiv.className = "savings-and-deals-item-box";
-  itemDiv.href = `https://shopee.ph/product/${item.item_basic.shopid}/${item.item_basic.itemid}`;
+  itemDiv.href = item.url;
 
   const productImage = document.createElement("img");
-  productImage.src = "https://cf.shopee.ph/file/" + item.item_basic.image;
+  productImage.src = item.image;
   productImage.id = "savings-and-deals-rating-image";
   itemDiv.appendChild(productImage);
 
+  const siteLogo = document.createElement("img");
+  siteLogo.src = chrome.runtime.getURL(item.logo);
+  siteLogo.id = "savings-and-deals-rating-site-logo";
+  itemDiv.appendChild(siteLogo);
+
   const itemTitle = document.createElement("p");
   itemTitle.className = "savings-and-deals-item-title";
-  itemTitle.innerText = item.item_basic.name.substring(0, 40);
-  if (item.item_basic.name.length > 40)
-    itemTitle.innerText = itemTitle.innerText + "...";
+  itemTitle.innerText = item.name.substring(0, 40);
+  if (item.name.length > 40) itemTitle.innerText = itemTitle.innerText + "...";
   itemDiv.appendChild(itemTitle);
 
   const price = document.createElement("p");
   price.innerText =
-    "₱" +
-    (item.item_basic.price_min_after_discount / 100000)
-      .toString()
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    "₱" + item.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   price.id = "savings-and-deals-rating-price";
   itemDiv.appendChild(price);
 
   const rating = document.createElement("p");
-  rating.innerText =
-    "★ " + item.item_basic.item_rating.rating_star.toFixed(2).toString();
+  rating.innerText = "★ " + item.rating.toFixed(2).toString();
   rating.id = "savings-and-deals-rating-star";
   itemDiv.appendChild(rating);
   itemWrapper.appendChild(itemDiv);
