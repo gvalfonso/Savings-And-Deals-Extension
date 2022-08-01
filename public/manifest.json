@@ -9,13 +9,13 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://shopee.ph/*"],
+      "matches": ["https://shopee.ph/*", "https://www.lazada.com.ph/*"],
       "css": ["savings-and-deals-css.css"],
-      "js": ["shopee-content.js"],
+      "js": ["site-content.js"],
       "all_frames": false
     }
   ],
-  "host_permissions": ["https://shopee.ph/"],
+  "host_permissions": ["https://shopee.ph/", "https://www.lazada.com.ph/*"],
   "icons": {
     "128": "images/icon128.png"
   },
@@ -36,7 +36,7 @@
         "images/shopee-logo.png",
         "images/lazada-logo.png"
       ],
-      "matches": ["https://shopee.ph/*"]
+      "matches": ["https://shopee.ph/*", "https://www.lazada.com.ph/*"]
     }
   ]
 }

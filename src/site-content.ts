@@ -1,5 +1,4 @@
 import { settings } from "./background";
-import { ItemsEntity } from "./search.type";
 import { Suggestion } from "./suggestion.type";
 
 var helperModal: HTMLDivElement;
@@ -121,19 +120,19 @@ function createItem(item: Suggestion): HTMLDivElement {
   siteLogo.id = "savings-and-deals-rating-site-logo";
   itemDiv.appendChild(siteLogo);
 
-  const itemTitle = document.createElement("p");
+  const itemTitle = document.createElement("div");
   itemTitle.className = "savings-and-deals-item-title";
   itemTitle.innerText = item.name.substring(0, 40);
   if (item.name.length > 40) itemTitle.innerText = itemTitle.innerText + "...";
   itemDiv.appendChild(itemTitle);
 
-  const price = document.createElement("p");
+  const price = document.createElement("div");
   price.innerText =
     "₱" + item.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   price.id = "savings-and-deals-rating-price";
   itemDiv.appendChild(price);
 
-  const rating = document.createElement("p");
+  const rating = document.createElement("div");
   rating.innerText = "★ " + item.rating.toFixed(2).toString();
   rating.id = "savings-and-deals-rating-star";
   itemDiv.appendChild(rating);

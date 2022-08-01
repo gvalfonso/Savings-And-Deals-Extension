@@ -5,7 +5,7 @@ module.exports = {
   watch: true,
   entry: {
     background: path.resolve(__dirname, "..", "src", "background.ts"),
-    "shopee-content": path.resolve(__dirname, "..", "src", "shopee-content.ts"),
+    "site-content": path.resolve(__dirname, "..", "src", "site-content.ts"),
   },
   output: {
     path: path.join(__dirname, "../dist"),
