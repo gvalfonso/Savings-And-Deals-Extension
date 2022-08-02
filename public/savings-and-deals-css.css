@@ -7,7 +7,7 @@
     top: 20%;
     right: 0px;
     z-index: 9000000000000000000;
-    box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.5);
+    box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.4);
     background-image: linear-gradient(#79dcf1, #6abfd3);
     transition: 0.1s;
 }
@@ -47,11 +47,11 @@
     width: 290px;
     height: 360px;
     position: fixed;
-    top: 20%;
-    right: 80px;
+    top: calc(20% + 75px);
+    right: 0px;
     border-radius: 4px;
     opacity: 1;
-    transition: opacity 0.3s; 
+    transition: 0.3s; 
     background-image: linear-gradient(#ffffff, #f9f9f9);
     z-index: 9000000000000000000;
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.2);
@@ -64,15 +64,15 @@
 
 #savings-and-deals-modal-clear {
     display: block;
-    width: 290px;
-    height: 360px;
+    width: 0px;
+    height: 0px;
     position: fixed;
-    top: 20%;
-    right: 80px;
+    top: calc(20% + 80px);
+    right: 0px;
     background: white;
     border-radius: 4px;
     opacity: 0;
-    transition: opacity 0.3s; 
+    transition: 0.3s; 
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.2);
     z-index: 9000000000000000000;
     padding: 5px;

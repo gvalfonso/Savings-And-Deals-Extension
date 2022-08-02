@@ -7,7 +7,6 @@ export var settings = {
 };
 
 const suggestions: Record<string, { time: number; items: any[] }> = {};
-const urlReadiness: Record<string, boolean> = {};
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   switch (request.type) {
@@ -52,7 +51,7 @@ async function handleSuggestions(tab: chrome.tabs.Tab) {
   if (!tab.url) return;
   if (
     suggestions[tab.url] &&
-    new Date().getTime() - suggestions[tab.url].time < 300000
+    new Date().getTime() - suggestions[tab.url].time < 30000
   ) {
     sendMessageToContent(tab.id || -1, {
       type: "SUGGESTIONS",
@@ -70,7 +69,7 @@ async function handleSuggestions(tab: chrome.tabs.Tab) {
         shopid,
         baseUrl
       );
-      if (shopeeSuggestions.success) return;
+      if (!shopeeSuggestions.success) return;
       combinedSuggestions = [...shopeeSuggestions.suggestions];
       suggestions[tab.url] = {
         time: new Date().getTime(),
