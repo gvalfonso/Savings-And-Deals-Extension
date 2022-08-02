@@ -1,5 +1,5 @@
 import { settings } from "./background";
-import { Suggestion } from "./suggestion.type";
+import { Suggestion } from "./types/suggestion.type";
 
 var helperModal: HTMLDivElement;
 var iconButton: HTMLAnchorElement;
@@ -20,6 +20,7 @@ chrome.runtime.sendMessage(
   { type: "GET_CONFIG" },
   (response: typeof settings) => {
     createHelper(response);
+    // chrome.runtime.sendMessage({ type: "GET_SUGGESTIONS" });
   }
 );
 
@@ -134,8 +135,7 @@ function createItem(item: Suggestion): HTMLDivElement {
   itemDiv.appendChild(itemTitle);
 
   const price = document.createElement("div");
-  price.innerText =
-    "₱" + item.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  price.innerText = item.priceString;
   price.id = "savings-and-deals-rating-price";
   itemDiv.appendChild(price);
 

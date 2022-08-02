@@ -12,7 +12,7 @@ async function searchLazada(name: string): Promise<LazadaSearchResult> {
   ).json();
 }
 
-async function getLazadaSuggestionsFromOutside(name: string, price: number) {
+async function getLazadaSuggestionsFromInside(name: string, price: number) {
   const lazadaResult = await searchLazada(name);
   const filteredLazadaItems = lazadaResult.mods.listItems
     ?.filter((item) => +item.price < price && +item.ratingScore > 4)

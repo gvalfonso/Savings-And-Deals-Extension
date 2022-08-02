@@ -1,20 +1,18 @@
-import { Suggestion } from "../suggestion.type";
-import { sleep } from "../utils";
+import { currencies } from "../config";
+import { Suggestion } from "../types/suggestion.type";
 import { ShopeeProductData, ShopVouchersEntity } from "./product.type";
-import { RecommendedItemsShopeeSearchResult } from "./recommended.type";
 import { ShopeeSearchResult } from "./search.type";
 
 export async function getShopeeSuggestions(
   itemid: string,
-  shopid: string
+  shopid: string,
+  baseUrl: string
 ): Promise<{
   success: boolean;
   suggestions: Suggestion[];
-  isNotProduct: boolean;
 }> {
-  var productData = await getProductData(itemid, shopid);
-  if (!productData.data)
-    return { success: true, suggestions: [], isNotProduct: true };
+  const productData = await getProductData(itemid, shopid, baseUrl);
+  if (!productData.data) return { success: false, suggestions: [] };
   const bestVoucher = getBestDiscount(
     productData.data.price_min,
     productData.data.shop_vouchers || []
@@ -36,7 +34,7 @@ export async function getShopeeSuggestions(
   }
   const shopeeSuggestions = await getShopeeSuggestionsFromInsideShopee(
     targetProduct,
-    itemid
+    baseUrl
   );
   // const lazadaSuggestions = await getLazadaSuggestionsFromOutside(
   //   targetProduct.name,
@@ -45,20 +43,22 @@ export async function getShopeeSuggestions(
   return {
     success: true,
     suggestions: [...shopeeSuggestions],
-    isNotProduct: false,
   };
 }
 export async function getShopeeSuggestionsFromInsideShopee(
   targetProduct: Record<string, any>,
-  itemid: string
+  baseUrl: string
 ) {
-  const otherProducts = await searchForOtherProducts(targetProduct.name);
-  const otherRecommendedProducts = await searchForRecommendedProducts(
-    targetProduct.name,
-    targetProduct.shopid,
-    targetProduct.itemid,
-    targetProduct.catid
-  );
+  const [otherProducts, otherRecommendedProducts] = await Promise.all([
+    searchForOtherProducts(targetProduct.name, baseUrl),
+    searchForRecommendedProducts(
+      targetProduct.name,
+      targetProduct.shopid,
+      targetProduct.itemid,
+      targetProduct.catid,
+      baseUrl
+    ),
+  ]);
   otherProducts.items = [
     ...(otherProducts.items || []),
     ...((otherRecommendedProducts.data.sections?.[0]?.data?.item as any).map(
@@ -80,7 +80,7 @@ export async function getShopeeSuggestionsFromInsideShopee(
         ) &&
       val.item_basic.sold > 0 &&
       val.item_basic.item_rating.rating_star > 4 &&
-      val.item_basic.itemid.toString() != itemid
+      val.item_basic.itemid.toString() != targetProduct.itemid
   );
 
   otherProducts.items.forEach(
@@ -103,25 +103,43 @@ export async function getShopeeSuggestionsFromInsideShopee(
       name: item.item_basic.name,
       price: item.item_basic.price_min_after_discount / 100000,
       rating: item.item_basic.item_rating.rating_star,
-      url: `https://shopee.ph/product/${item.item_basic.shopid}/${item.item_basic.itemid}`,
+      url: `${baseUrl}/product/${item.item_basic.shopid}/${item.item_basic.itemid}`,
       image: `https://cf.shopee.ph/file/${item.item_basic.image}`,
       logo: "images/shopee-logo.png",
+    }))
+    .map((a: any) => ({
+      ...a,
+      priceString:
+        (currencies[baseUrl as keyof typeof currencies] || "$") +
+        a.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
     }));
+  if (
+    baseUrl === "https://shopee.com.br" ||
+    baseUrl === "https://shopee.co.id"
+  ) {
+    rankedItems.forEach(
+      (a) =>
+        (a.priceString =
+          (currencies[baseUrl as keyof typeof currencies] || "$") +
+          a.price
+            .toString()
+            .replace(/./g, ",")
+            .replace(/\B(?=(\d{3})+(?!\d))/g, "."))
+    );
+  }
   return rankedItems;
 }
 
 async function searchForOtherProducts(
-  searchKeyword: string
+  searchKeyword: string,
+  baseUrl: string
 ): Promise<ShopeeSearchResult> {
   return (
     await fetch(
-      `https://shopee.ph/api/v4/search/search_items?by=relevancy&keyword=${encodeURIComponent(
+      `${baseUrl}/api/v4/search/search_items?by=relevancy&keyword=${encodeURIComponent(
         searchKeyword
       )}&limit=60&newest=0&order=desc&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2`,
-      {
-        method: "GET",
-        mode: "cors",
-      }
+      { method: "GET" }
     )
   ).json();
 }
@@ -130,17 +148,15 @@ async function searchForRecommendedProducts(
   searchKeyword: string,
   shopid: number,
   itemid: number,
-  categoryid: number
-): Promise<RecommendedItemsShopeeSearchResult> {
+  categoryid: number,
+  baseUrl: string
+): Promise<any> {
   return (
     await fetch(
-      `https://shopee.ph/api/v4/recommend/recommend?bundle=product_detail_page&catid=${categoryid}&item_card=3&itemid=${itemid}&keyword=${encodeURIComponent(
+      `${baseUrl}/api/v4/recommend/recommend?bundle=product_detail_page&catid=${categoryid}&item_card=3&itemid=${itemid}&keyword=${encodeURIComponent(
         searchKeyword
       )}&limit=48&section=you_may_also_like&shopid=${shopid}`,
-      {
-        method: "GET",
-        mode: "cors",
-      }
+      { method: "GET" }
     )
   ).json();
 }
@@ -160,17 +176,15 @@ function parseDiscount(itemPrice: number, voucherLabel: string) {
   return discountAmount || 0;
 }
 
-async function getProductData(
+export async function getProductData(
   itemid: string,
-  shopid: string
+  shopid: string,
+  baseUrl: string
 ): Promise<ShopeeProductData> {
   return (
     await fetch(
-      `https://shopee.ph/api/v4/item/get?itemid=${itemid}&shopid=${shopid}`,
-      {
-        method: "GET",
-        mode: "cors",
-      }
+      `${baseUrl}/api/v4/item/get?itemid=${itemid}&shopid=${shopid}`,
+      { method: "GET" }
     )
   ).json();
 }

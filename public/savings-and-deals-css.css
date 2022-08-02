@@ -9,7 +9,7 @@
     z-index: 9000000000000000000;
     box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.5);
     background-image: linear-gradient(#79dcf1, #6abfd3);
-    transition: 0.3s;
+    transition: 0.1s;
 }
 
 .savings-and-deals-icon:hover {
@@ -99,6 +99,7 @@
     border-radius: 4px;
     box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.2);
     transition: 0.3s;
+    border:1px solid #e7e7e7;
     position: relative;
     color: black;
 }

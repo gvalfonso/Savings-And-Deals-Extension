@@ -1,13 +1,15 @@
-import { getShopeeSuggestions } from "./shopee/shopee.search";
-import { Suggestion } from "./suggestion.type";
-
+import { config } from "./config";
+import { getProductData, getShopeeSuggestions } from "./shopee/shopee.search";
+import { Suggestion } from "./types/suggestion.type";
 export var settings = {
   iconHidden: false,
-  modalHidden: true,
+  modalHidden: false,
 };
-const suggestions: Record<string, { time: number; items: any[] }> = {};
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+const suggestions: Record<string, { time: number; items: any[] }> = {};
+const urlReadiness: Record<string, boolean> = {};
+
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   switch (request.type) {
     case "GET_CONFIG":
       sendResponse(settings);
@@ -18,6 +20,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         ...request.settings,
       };
       break;
+    // case "GET_SUGGESTIONS":
+    //   if (sender.tab) handleSuggestions(sender.tab);
+    //   break;
     default:
       break;
   }
@@ -37,48 +42,47 @@ chrome.action.onClicked.addListener((tab) => {
 });
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (changeInfo.status === "complete") {
-    if (tab.url) {
-      if (
-        suggestions[tab.url] &&
-        new Date().getTime() - suggestions[tab.url].time < 60000
-      ) {
-        sendMessageToContent(tab.id || -1, {
-          type: "SUGGESTIONS",
-          items: suggestions[tab.url].items || [],
-        });
-        return;
-      }
-      var combinedSuggestions: Suggestion[] = [];
-      if (tab.url.includes("shopee")) {
-        const { shopid, itemid } = getIds(tab.url);
-        if (itemid && shopid) {
-          sendMessageToContent(tab.id || -1, { type: "LOADING" });
-          const shopeeSuggestions = await getShopeeSuggestions(itemid, shopid);
-          if (shopeeSuggestions.isNotProduct) return;
-          combinedSuggestions = [
-            ...shopeeSuggestions.suggestions,
-            // ...lazadaSuggestions,
-          ];
-          combinedSuggestions = combinedSuggestions.sort(
-            (a, b) => b.price - a.price
-          );
-          suggestions[tab.url] = {
-            time: new Date().getTime(),
-            items: combinedSuggestions,
-          };
-          sendMessageToContent(tab.id || -1, {
-            type: "SUGGESTIONS",
-            items: combinedSuggestions,
-          });
-        } else {
-          sendMessageToContent(tab.id || -1, { type: "LOADING" });
-        }
-      } else if (tab.url.includes("lazada")) {
-      }
-    }
+  if (changeInfo.status === "complete" && tab.url) {
+    handleSuggestions(tab);
   }
 });
+
+async function handleSuggestions(tab: chrome.tabs.Tab) {
+  sendMessageToContent(tab.id || -1, { type: "LOADING" });
+  if (!tab.url) return;
+  if (
+    suggestions[tab.url] &&
+    new Date().getTime() - suggestions[tab.url].time < 300000
+  ) {
+    sendMessageToContent(tab.id || -1, {
+      type: "SUGGESTIONS",
+      items: suggestions[tab.url].items || [],
+    });
+    return;
+  }
+  var combinedSuggestions: Suggestion[] = [];
+  if (tab.url.includes("shopee")) {
+    const { shopid, itemid } = getIds(tab.url);
+    if (itemid && shopid) {
+      const baseUrl = tab.url?.split("/").slice(0, 3).join("/");
+      const shopeeSuggestions = await getShopeeSuggestions(
+        itemid,
+        shopid,
+        baseUrl
+      );
+      if (shopeeSuggestions.success) return;
+      combinedSuggestions = [...shopeeSuggestions.suggestions];
+      suggestions[tab.url] = {
+        time: new Date().getTime(),
+        items: combinedSuggestions,
+      };
+      sendMessageToContent(tab.id || -1, {
+        type: "SUGGESTIONS",
+        items: combinedSuggestions,
+      });
+    }
+  }
+}
 
 async function sendMessageToContent(tabId: number, data: Record<string, any>) {
   chrome.tabs.sendMessage(tabId, data);

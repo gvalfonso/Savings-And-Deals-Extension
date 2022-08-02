@@ -5,4 +5,5 @@ export interface Suggestion {
   url: string;
   image: string;
   logo: string;
+  priceString: string;
 }
