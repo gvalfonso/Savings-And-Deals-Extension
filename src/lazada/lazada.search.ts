@@ -1,4 +1,22 @@
+import { Suggestion } from "../types/suggestion.type";
 import { LazadaSearchResult } from "./lazada.types";
+
+export async function getLazadaSuggestions(url: string): Promise<{
+  success: boolean;
+  suggestions: Suggestion[];
+}> {
+  const productData = await getProductData(url);
+  return {
+    success: true,
+    suggestions: [],
+  };
+}
+
+async function getProductData(url: string) {
+  const res = await fetch(url, {
+    method: "GET",
+  });
+}
 
 async function searchLazada(name: string): Promise<LazadaSearchResult> {
   return (

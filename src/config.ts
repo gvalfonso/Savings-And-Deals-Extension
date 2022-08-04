@@ -18,5 +18,3 @@ export const currencies = {
   "https://shopee.pl": "zł",
   "https://shopee.es": "€",
 };
-
-console.log(JSON.stringify(Object.keys(currencies).map((i) => i + "/*")));

@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { settings } from "./background";
 import { Suggestion } from "./types/suggestion.type";
 
@@ -16,9 +17,11 @@ interface SuggestionsMessage extends MessageBaseType {
   items: Suggestion[];
 }
 
+var settings: typeof settings;
 chrome.runtime.sendMessage(
   { type: "GET_CONFIG" },
   (response: typeof settings) => {
+    settings = response;
     createHelper(response);
   }
 );
@@ -34,10 +37,13 @@ chrome.runtime.onMessage.addListener(function (
           const itemDiv = createItem(item);
           helperModal.appendChild(itemDiv);
         });
+        if (!settings.modalHidden)
+          helperModal.id = "savings-and-deals-modal-opaque";
       } else if ((msg as SuggestionsMessage).items.length === 0) {
         const imgDiv = document.createElement("img");
         imgDiv.src = chrome.runtime.getURL("images/best-deal-sticker.png");
         imgDiv.id = "savings-and-deals-best-deal";
+        helperModal.id = "savings-and-deals-modal-clear";
         helperModal.appendChild(imgDiv);
       }
       break;
@@ -49,6 +55,7 @@ chrome.runtime.onMessage.addListener(function (
       const imgDiv = document.createElement("img");
       imgDiv.src = chrome.runtime.getURL("images/loading.gif");
       imgDiv.id = "savings-and-deals-loading";
+      helperModal.id = "savings-and-deals-modal-clear";
       helperModal.appendChild(imgDiv);
       break;
     default:
@@ -67,6 +74,7 @@ function toggleModal() {
     helperModal.id === "savings-and-deals-modal-opaque"
       ? "savings-and-deals-modal-clear"
       : "savings-and-deals-modal-opaque";
+  settings.modalHidden = helperModal.id === "savings-and-deals-modal-clear";
   chrome.runtime.sendMessage({
     type: "SET_CONFIG",
     settings: {
@@ -100,8 +108,7 @@ function createHelper(config: typeof settings) {
   document.getElementsByTagName("body")[0].appendChild(iconButton);
 
   helperModal = document.createElement("div");
-  if (config.modalHidden) helperModal.id = "savings-and-deals-modal-clear";
-  else helperModal.id = "savings-and-deals-modal-opaque";
+  helperModal.id = "savings-and-deals-modal-clear";
   document.getElementsByTagName("body")[0].appendChild(helperModal);
 
   const imgDiv = document.createElement("img");

@@ -13,10 +13,10 @@ export async function getShopeeSuggestions(
 }> {
   const productData = await getProductData(itemid, shopid, baseUrl);
   if (!productData.data) return { success: false, suggestions: [] };
-  // const bestVoucher = getBestDiscount(
-  //   productData.data.price_min,
-  //   productData.data.shop_vouchers || []
-  // );
+  const bestVoucher = getBestDiscount(
+    productData.data.price_min,
+    productData.data.shop_vouchers || []
+  );
   var targetProduct: Record<string, any> = {
     price: productData.data.price_min,
     name: productData.data.name,
@@ -24,14 +24,14 @@ export async function getShopeeSuggestions(
     itemid: productData.data.itemid,
     catid: productData.data.categories?.[0].catid || 0,
   };
-  // if (bestVoucher) {
-  //   targetProduct = {
-  //     ...targetProduct,
-  //     voucher: bestVoucher.highestVoucherDiscountValue,
-  //     price:
-  //       productData.data.price_min - bestVoucher.highestVoucherDiscountValue,
-  //   };
-  // }
+  if (bestVoucher) {
+    targetProduct = {
+      ...targetProduct,
+      voucher: bestVoucher.highestVoucherDiscountValue,
+      price:
+        productData.data.price_min - bestVoucher.highestVoucherDiscountValue,
+    };
+  }
   const shopeeSuggestions = await getShopeeSuggestionsFromInsideShopee(
     targetProduct,
     baseUrl
@@ -41,6 +41,7 @@ export async function getShopeeSuggestions(
     suggestions: [...shopeeSuggestions],
   };
 }
+
 export async function getShopeeSuggestionsFromInsideShopee(
   targetProduct: Record<string, any>,
   baseUrl: string
@@ -73,17 +74,16 @@ export async function getShopeeSuggestionsFromInsideShopee(
       val.item_basic.itemid.toString() != targetProduct.itemid
   );
 
-  // otherProducts.items.forEach(
-  //   (i: any) =>
-  //     (i.item_basic.price_min_after_discount =
-  //       i.item_basic.price_min -
-  //       parseDiscount(
-  //         i.item_basic.price_min,
-  //         i.item_basic.voucher_info?.label || "",
-  //         baseUrl
-  //       ))
-  // );
-  console.log(otherProducts.items);
+  otherProducts.items.forEach(
+    (i: any) =>
+      (i.item_basic.price_min_after_discount =
+        i.item_basic.price_min -
+        parseDiscount(
+          i.item_basic.price_min,
+          i.item_basic.voucher_info?.label || "",
+          baseUrl
+        ))
+  );
   otherProducts.items = otherProducts.items?.filter(
     (i: any) => i.item_basic.price_min < targetProduct.price
   );
