@@ -6,4 +6,5 @@ export interface Suggestion {
   image: string;
   logo: string;
   priceString: string;
+  voucher?: string;
 }

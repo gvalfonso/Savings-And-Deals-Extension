@@ -13,10 +13,10 @@ export async function getShopeeSuggestions(
 }> {
   const productData = await getProductData(itemid, shopid, baseUrl);
   if (!productData.data) return { success: false, suggestions: [] };
-  const bestVoucher = getBestDiscount(
-    productData.data.price_min,
-    productData.data.shop_vouchers || []
-  );
+  // const bestVoucher = getBestDiscount(
+  //   productData.data.price_min,
+  //   productData.data.shop_vouchers || []
+  // );
   var targetProduct: Record<string, any> = {
     price: productData.data.price_min,
     name: productData.data.name,
@@ -24,22 +24,18 @@ export async function getShopeeSuggestions(
     itemid: productData.data.itemid,
     catid: productData.data.categories?.[0].catid || 0,
   };
-  if (bestVoucher) {
-    targetProduct = {
-      ...targetProduct,
-      voucher: bestVoucher.highestVoucherDiscountValue,
-      price:
-        productData.data.price_min - bestVoucher.highestVoucherDiscountValue,
-    };
-  }
+  // if (bestVoucher) {
+  //   targetProduct = {
+  //     ...targetProduct,
+  //     voucher: bestVoucher.highestVoucherDiscountValue,
+  //     price:
+  //       productData.data.price_min - bestVoucher.highestVoucherDiscountValue,
+  //   };
+  // }
   const shopeeSuggestions = await getShopeeSuggestionsFromInsideShopee(
     targetProduct,
     baseUrl
   );
-  // const lazadaSuggestions = await getLazadaSuggestionsFromOutside(
-  //   targetProduct.name,
-  //   targetProduct.price
-  // );
   return {
     success: true,
     suggestions: [...shopeeSuggestions],
@@ -61,15 +57,9 @@ export async function getShopeeSuggestionsFromInsideShopee(
   ]);
   otherProducts.items = [
     ...(otherProducts.items || []),
-    ...((otherRecommendedProducts.data.sections?.[0]?.data?.item as any).map(
-      (i: any) => ({ item_basic: i })
-    ) || []),
-  ];
-  otherProducts.items = [
-    ...(otherProducts.items || []),
-    ...((otherRecommendedProducts.data.sections?.[0]?.data?.item as any).map(
-      (i: any) => ({ item_basic: i })
-    ) || []),
+    ...((
+      (otherRecommendedProducts.data.sections?.[0]?.data?.item as any) || []
+    ).map((i: any) => ({ item_basic: i })) || []),
   ].filter((i) => i.item_basic.catid === targetProduct.catid);
   otherProducts.items = otherProducts.items?.filter(
     (val: any, index: any, self: any) =>
@@ -83,17 +73,19 @@ export async function getShopeeSuggestionsFromInsideShopee(
       val.item_basic.itemid.toString() != targetProduct.itemid
   );
 
-  otherProducts.items.forEach(
-    (i: any) =>
-      (i.item_basic.price_min_after_discount =
-        i.item_basic.price_min -
-        parseDiscount(
-          i.item_basic.price_min,
-          i.item_basic.voucher_info?.label || ""
-        ))
-  );
+  // otherProducts.items.forEach(
+  //   (i: any) =>
+  //     (i.item_basic.price_min_after_discount =
+  //       i.item_basic.price_min -
+  //       parseDiscount(
+  //         i.item_basic.price_min,
+  //         i.item_basic.voucher_info?.label || "",
+  //         baseUrl
+  //       ))
+  // );
+  console.log(otherProducts.items);
   otherProducts.items = otherProducts.items?.filter(
-    (i: any) => i.item_basic.price_min_after_discount < targetProduct.price
+    (i: any) => i.item_basic.price_min < targetProduct.price
   );
   const rankedItems: Suggestion[] = otherProducts.items
     ?.filter((i: any) => i.item_basic.price_min / targetProduct.price > 0.3)
@@ -101,29 +93,47 @@ export async function getShopeeSuggestionsFromInsideShopee(
     .sort((a: any, b: any) => b.item_basic.price_min - a.item_basic.price_min)
     .map((item: any) => ({
       name: item.item_basic.name,
-      price: item.item_basic.price_min_after_discount / 100000,
+      price: item.item_basic.price_min / 100000,
       rating: item.item_basic.item_rating.rating_star,
       url: `${baseUrl}/product/${item.item_basic.shopid}/${item.item_basic.itemid}`,
       image: `https://cf.shopee.ph/file/${item.item_basic.image}`,
       logo: "images/shopee-logo.png",
+      voucher: item.item_basic.voucher_info?.label || "",
     }))
     .map((a: any) => ({
       ...a,
       priceString:
         (currencies[baseUrl as keyof typeof currencies] || "$") +
-        a.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+        a.price
+          .toLocaleString("en", {
+            useGrouping: false,
+            minimumFractionDigits: 2,
+          })
+          .toString()
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ","),
     }));
   if (
-    baseUrl === "https://shopee.com.br" ||
-    baseUrl === "https://shopee.co.id"
+    [
+      "https://shopee.cl",
+      "https://shopee.pl",
+      "https://shopee.com.ar",
+      "https://shopee.vn",
+      "https://shopee.co.id",
+      "https://shopee.com.br",
+      "https://shopee.es",
+    ].includes(baseUrl)
   ) {
     rankedItems.forEach(
       (a) =>
         (a.priceString =
           (currencies[baseUrl as keyof typeof currencies] || "$") +
           a.price
+            .toLocaleString("en", {
+              useGrouping: false,
+              minimumFractionDigits: 2,
+            })
             .toString()
-            .replace(/./g, ",")
+            .replace(".", ",")
             .replace(/\B(?=(\d{3})+(?!\d))/g, "."))
     );
   }
@@ -161,12 +171,18 @@ async function searchForRecommendedProducts(
   ).json();
 }
 
-function parseDiscount(itemPrice: number, voucherLabel: string) {
+function parseDiscount(
+  itemPrice: number,
+  voucherLabel: string,
+  baseUrl: string
+) {
   const discount = voucherLabel.split(" ")?.[0];
   var discountAmount = 0;
   if (discount.includes("%")) {
     discountAmount = itemPrice * +discount.replace(/%/g, "") * 0.01;
-  } else if (discount.includes("₱")) {
+  } else if (
+    discount.includes(currencies[baseUrl as keyof typeof currencies])
+  ) {
     if (discount.includes("K")) {
       discountAmount = +discount.replace(/[₱K]/g, "") * 100000 * 1000;
     } else {

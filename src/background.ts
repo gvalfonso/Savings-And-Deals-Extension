@@ -1,12 +1,16 @@
 import { config } from "./config";
 import { getProductData, getShopeeSuggestions } from "./shopee/shopee.search";
 import { Suggestion } from "./types/suggestion.type";
+import { getIds } from "./utils";
+
 export var settings = {
   iconHidden: false,
   modalHidden: false,
 };
 
 const suggestions: Record<string, { time: number; items: any[] }> = {};
+
+const supportedWebsites = ["shopee"];
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   switch (request.type) {
@@ -19,9 +23,6 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         ...request.settings,
       };
       break;
-    // case "GET_SUGGESTIONS":
-    //   if (sender.tab) handleSuggestions(sender.tab);
-    //   break;
     default:
       break;
   }
@@ -30,7 +31,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 chrome.action.onClicked.addListener((tab) => {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     var activeTab = tabs[0];
-    if (activeTab.url?.includes("shopee.ph")) {
+    if (new RegExp(supportedWebsites.join("|")).test(activeTab.url || "")) {
       settings.iconHidden = !settings.iconHidden;
       sendMessageToContent(activeTab.id || -1, {
         type: "TOGGLE",
@@ -85,14 +86,4 @@ async function handleSuggestions(tab: chrome.tabs.Tab) {
 
 async function sendMessageToContent(tabId: number, data: Record<string, any>) {
   chrome.tabs.sendMessage(tabId, data);
-}
-
-function getIds(url: string) {
-  url = url.split("?")[0];
-  var [shopid, itemid] = url.split("/").slice(4);
-  if (!shopid || !itemid) {
-    [shopid, itemid] = url.split(".").slice(-2);
-  }
-  if (+shopid > 0) return { shopid, itemid };
-  return { shopid: undefined, itemid: undefined };
 }

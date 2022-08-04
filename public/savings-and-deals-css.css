@@ -155,3 +155,18 @@
     left: 55px;
     top: 70px
 }
+
+#savings-and-deals-voucher {
+    position: absolute;
+    background-image: linear-gradient(#ffd4d4f2, #ffbbbbf0);
+    right: 63.5%;
+    bottom: 0px;
+    font-size: 12px;
+    padding: 4px
+}
+
+#savings-and-deals-voucher-text {
+    font-size: 12px;
+    opacity: 1;
+    color: rgb(0, 0, 0)
+}

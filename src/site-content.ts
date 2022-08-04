@@ -20,7 +20,6 @@ chrome.runtime.sendMessage(
   { type: "GET_CONFIG" },
   (response: typeof settings) => {
     createHelper(response);
-    // chrome.runtime.sendMessage({ type: "GET_SUGGESTIONS" });
   }
 );
 
@@ -143,6 +142,17 @@ function createItem(item: Suggestion): HTMLDivElement {
   rating.innerText = "★ " + item.rating.toFixed(2).toString();
   rating.id = "savings-and-deals-rating-star";
   itemDiv.appendChild(rating);
+  itemWrapper.appendChild(itemDiv);
+
+  if (item.voucher) {
+    const voucherContainer = document.createElement("div");
+    voucherContainer.id = "savings-and-deals-voucher";
+    const voucher = document.createElement("div");
+    voucher.id = "savings-and-deals-voucher-text";
+    voucher.innerText = item.voucher;
+    voucherContainer.appendChild(voucher);
+    itemDiv.appendChild(voucherContainer);
+  }
   itemWrapper.appendChild(itemDiv);
   return itemWrapper;
 }

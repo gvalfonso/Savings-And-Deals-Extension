@@ -11,14 +11,19 @@
     {
       "matches": [
         "https://shopee.sg/*",
-        "https://shopee.my/*",
+        "https://shopee.com.my/*",
         "https://shopee.co.th/*",
         "https://shopee.tw/*",
-        // "https://shopee.co.id/*",
+        "https://shopee.co.id/*",
         "https://shopee.vn/*",
         "https://shopee.ph/*",
         "https://shopee.com.br/*",
-        "https://www.lazada.com.ph/*"
+        "https://shopee.com.ar/*",
+        "https://shopee.cl/*",
+        "https://shopee.com.co/*",
+        "https://shopee.com.mx/*",
+        "https://shopee.pl/*",
+        "https://shopee.es/*"
       ],
       "css": ["savings-and-deals-css.css"],
       "js": ["site-content.js"],
@@ -27,14 +32,19 @@
   ],
   "host_permissions": [
     "https://shopee.sg/*",
-    "https://shopee.my/*",
+    "https://shopee.com.my/*",
     "https://shopee.co.th/*",
     "https://shopee.tw/*",
-    // "https://shopee.co.id/*",
+    "https://shopee.co.id/*",
     "https://shopee.vn/*",
     "https://shopee.ph/*",
     "https://shopee.com.br/*",
-    "https://www.lazada.com.ph/*"
+    "https://shopee.com.ar/*",
+    "https://shopee.cl/*",
+    "https://shopee.com.co/*",
+    "https://shopee.com.mx/*",
+    "https://shopee.pl/*",
+    "https://shopee.es/*"
   ],
   "icons": {
     "128": "images/icon128.png"
@@ -58,14 +68,19 @@
       ],
       "matches": [
         "https://shopee.sg/*",
-        "https://shopee.my/*",
+        "https://shopee.com.my/*",
         "https://shopee.co.th/*",
         "https://shopee.tw/*",
-        // "https://shopee.co.id/*",
+        "https://shopee.co.id/*",
         "https://shopee.vn/*",
         "https://shopee.ph/*",
         "https://shopee.com.br/*",
-        "https://www.lazada.com.ph/*"
+        "https://shopee.com.ar/*",
+        "https://shopee.cl/*",
+        "https://shopee.com.co/*",
+        "https://shopee.com.mx/*",
+        "https://shopee.pl/*",
+        "https://shopee.es/*"
       ]
     }
   ]

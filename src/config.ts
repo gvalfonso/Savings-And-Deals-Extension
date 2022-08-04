@@ -11,4 +11,12 @@ export const currencies = {
   "https://shopee.vn": "₫",
   "https://shopee.ph": "₱",
   "https://shopee.com.br": "R$",
+  "https://shopee.com.ar": "$",
+  "https://shopee.cl": "CLP",
+  "https://shopee.com.co": "COP",
+  "https://shopee.com.mx": "$",
+  "https://shopee.pl": "zł",
+  "https://shopee.es": "€",
 };
+
+console.log(JSON.stringify(Object.keys(currencies).map((i) => i + "/*")));
