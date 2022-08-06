@@ -47,7 +47,7 @@ export async function getShopeeSuggestionsFromInsideShopee(
   baseUrl: string
 ) {
   const [otherProducts, otherRecommendedProducts] = await Promise.all([
-    searchForOtherProducts(targetProduct.name, baseUrl),
+    searchForOtherProducts(targetProduct.name, baseUrl, targetProduct.catid),
     searchForRecommendedProducts(
       targetProduct.name,
       targetProduct.shopid,
@@ -142,13 +142,14 @@ export async function getShopeeSuggestionsFromInsideShopee(
 
 async function searchForOtherProducts(
   searchKeyword: string,
-  baseUrl: string
+  baseUrl: string,
+  categoryid: number
 ): Promise<ShopeeSearchResult> {
   return (
     await fetch(
       `${baseUrl}/api/v4/search/search_items?by=relevancy&keyword=${encodeURIComponent(
         searchKeyword
-      )}&limit=60&newest=0&order=desc&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2`,
+      )}&limit=60&newest=0&order=desc&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2&categoryids=${categoryid}&rating_filter=4`,
       { method: "GET" }
     )
   ).json();
