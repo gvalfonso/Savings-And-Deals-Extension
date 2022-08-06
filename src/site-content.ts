@@ -37,7 +37,7 @@ chrome.runtime.onMessage.addListener(function (
           const itemDiv = createItem(item);
           helperModal.appendChild(itemDiv);
         });
-        if (!settings.iconHidden)
+        if (!settings.iconHidden && !settings.modalHidden)
           helperModal.id = "savings-and-deals-modal-opaque";
       } else if ((msg as SuggestionsMessage).items.length === 0) {
         const imgDiv = document.createElement("img");
