@@ -52,9 +52,7 @@ chrome.runtime.onMessage.addListener(function (
       break;
     case "LOADING":
       clearHelperModal();
-      const imgDiv = document.createElement("img");
-      imgDiv.src = chrome.runtime.getURL("images/loading.gif");
-      imgDiv.id = "savings-and-deals-loading";
+      const imgDiv = createLoadingGif()
       helperModal.id = "savings-and-deals-modal-clear";
       helperModal.appendChild(imgDiv);
       break;
@@ -81,6 +79,14 @@ function toggleModal() {
       modalHidden: helperModal.id === "savings-and-deals-modal-clear",
     },
   });
+}
+
+function createLoadingGif() {
+  const imgDiv = document.createElement("img");
+  imgDiv.src = chrome.runtime.getURL("images/loading.gif");
+  imgDiv.id = "savings-and-deals-loading";
+  return imgDiv
+
 }
 
 function toggleIcon(hidden: boolean) {
@@ -111,9 +117,7 @@ function createHelper(config: typeof settings) {
   helperModal.id = "savings-and-deals-modal-clear";
   document.getElementsByTagName("body")[0].appendChild(helperModal);
 
-  const imgDiv = document.createElement("img");
-  imgDiv.src = chrome.runtime.getURL("images/loading.gif");
-  imgDiv.id = "savings-and-deals-loading";
+  const imgDiv = createLoadingGif()
   helperModal.appendChild(imgDiv);
 }
 
