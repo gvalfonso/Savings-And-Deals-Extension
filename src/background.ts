@@ -80,11 +80,15 @@ async function handleSuggestions(tab: chrome.tabs.Tab) {
         type: "SUGGESTIONS",
         items: combinedSuggestions,
       });
-      if (combinedSuggestions.length > 0 && settings.iconHidden)
+      if (combinedSuggestions.length > 0 && settings.iconHidden) {
+        await chrome.action.setBadgeBackgroundColor({
+          color: "#FFD580",
+        });
         await chrome.action.setBadgeText({
           text: combinedSuggestions.length.toString(),
           tabId: tab.id || -1,
         });
+      }
     }
   }
 }
