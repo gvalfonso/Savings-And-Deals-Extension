@@ -59,7 +59,7 @@ export async function getShopeeSuggestionsFromInsideShopee(
   otherProducts.items = [
     ...(otherProducts.items || []),
     ...((
-      (otherRecommendedProducts.data.sections?.[0]?.data?.item as any) || []
+      (otherRecommendedProducts.data?.sections?.[0]?.data?.item as any) || []
     ).map((i: any) => ({ item_basic: i })) || []),
   ].filter((i) => i.item_basic.catid === targetProduct.catid);
   otherProducts.items = otherProducts.items?.filter(
